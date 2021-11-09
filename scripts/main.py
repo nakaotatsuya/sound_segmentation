@@ -173,7 +173,7 @@ if __name__ == "__main__":
     rospack = rospkg.RosPack()
     root = osp.join(rospack.get_path("sound_segmentation"), "audios")
 
-    epochs = 100
+    epochs = 300
     batch_size = 4
     lr = 0.001
 
@@ -192,7 +192,7 @@ if __name__ == "__main__":
     save_dir = osp.join("results", dataset_name, dirname)
 
     #
-    save_dir = osp.join("results", dataset_name, "2021_1106_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1106_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 

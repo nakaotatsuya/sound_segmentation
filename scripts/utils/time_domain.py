@@ -17,13 +17,13 @@ def _pred_dir_make(no, save_dir):
     return pred_dir
 
 def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir):
-    print("aaa")
+    #print("aaa")
     plot_num = classes * ang_reso
 
     pred_dir = _pred_dir_make(no, save_dir)
     #print(str(no))
     data_dir = os.path.join(dataset_dir, "val", "{:0=5d}".format(no+1))
-    print(data_dir)
+    #print(data_dir)
 
     sdr_array = np.zeros((plot_num, 1))
     sir_array = np.zeros((plot_num, 1))
@@ -34,7 +34,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
 
     for index_num in range(plot_num):
         if Y_true[no][index_num].max() > 0:
-            print(index_num)
+            #print(index_num)
             Y_linear = 10 ** ((Y_pred[no][index_num] * 120 - 120) / 20)
             Y_linear = np.vstack((Y_linear, Y_linear[::-1]))
 
@@ -69,7 +69,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
                     #print(int(angle))
                     if index_num == int(angle) // (360 // ang_reso):
                         Y_true_wave, _ = sf.read(data_dir + "/" + class_name + ".wav")
-                        print(Y_true_wave.shape)
+                        #print(Y_true_wave.shape)
                     #print(Y_true_wave.shape)
             # else:                
             #     Y_true_wave, _ = sf.read(data_dir + "/" + label.index[index_num // ang_reso] + ".wav")
