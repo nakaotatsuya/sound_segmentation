@@ -1,0 +1,6 @@
+*.wav
+*.jpg
+*.png
+*.pyc
+audios/
+scripts/results/

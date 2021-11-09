@@ -1,0 +1,25 @@
+<launch>
+  <arg name="device" default="plughw:1,0" />
+  <arg name="device_name" default="tamago" />
+  <arg name="mode" default="false" />
+  <arg name="ns" default="tamago1" />
+  <arg name="channels" default="8" />
+  <!-- publish audio data as wav format -->
+  <group if="$(arg mode)" >
+    <group ns="$(arg device_name)">
+      <node name="audio_capture" pkg="audio_capture" type="audio_capture" output="screen">
+        <param name="format" value="wave" />
+        <param name="channels" value="8" />
+        <param name="depth" value="16" />
+        <param name="sample_rate" value="16000" />
+        <param name="device" value="$(arg device)" />
+      </node>
+    </group>
+  </group>
+
+  <group ns="$(arg ns)" >
+    <node name="audio_to_rec" pkg="sound_segmentation" type="audio_to_rec.py" output="screen">
+      <remap from="~input" to="audio"/>
+    </node>
+  </group>
+</launch>
