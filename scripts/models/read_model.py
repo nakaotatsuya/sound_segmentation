@@ -1,4 +1,4 @@
-#from model import FCN8s, UNet, CRNN, Deeplabv3plus, CRNN_SED
+from model import FCN8s, UNet, CRNN, Deeplabv3plus, CRNN_SED
 from models import UNet
 
 def read_model(model_name, n_classes, angular_resolution, input_dim):
