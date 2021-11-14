@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader
 from torch.backends import cudnn
 
 #from model import read_model, FCN8s, UNet, CRNN, Deeplabv3plus
-from models import read_model, UNet
+from models import read_model, UNet, Deeplabv3plus
 from data import SoundSegmentationDataset
 from utils import scores, rmse, save_score_array
 from utils import plot_loss, plot_mixture_stft, plot_event, plot_class_stft
@@ -47,7 +47,10 @@ def train():
         criterion = nn.MSELoss()
 
     optimizer = optim.Adam(model.parameters(), lr=lr)
-    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=100, gamma=0.95)
+    #optimizer = optim.Adagrad(model.parameters(), lr=lr)
+    #optimizer = optim.AdamW(model.parameters(), lr=lr)
+    #optimizer = optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+    lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.95)
 
     losses, val_losses = [], []
     loss_temp, val_loss_temp = 0, 0
@@ -61,7 +64,15 @@ def train():
             labels = labels.cuda()
             outputs = model(images)
 
-            loss = criterion(outputs, labels)
+            ##weakly
+            if label_type == "weakly":
+                weak_labels = (labels > 0.0).to(torch.float32)
+                weak_labels = torch.mul(images[:, 0, :, :].unsqueeze(1), weak_labels)
+
+                loss = criterion(outputs, weak_labels)
+
+            else:
+                loss = criterion(outputs, labels)
             loss_temp += loss.item()
 
             optimizer.zero_grad()
@@ -140,14 +151,15 @@ def val():
 
     #print(gts.shape)
 
-    if task == "ssls":
-        scores_array = rmse(gts, preds, classes=n_classes)
-        save_score_array(scores_array, save_dir)
+    #if task == "ssls":
+    #    scores_array = rmse(gts, preds, classes=n_classes)
+    #    save_score_array(scores_array, save_dir)
 
     for n in range(len(preds)):
         plot_mixture_stft(X_ins, no=n, save_dir=save_dir)
         plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution)
         restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir)
+        #sys.exit()
 
     # for i in range(angular_resolution):
     #     if gts[0][i].max() > 0:
@@ -171,7 +183,8 @@ def val():
 
 if __name__ == "__main__":
     rospack = rospkg.RosPack()
-    root = osp.join(rospack.get_path("sound_segmentation"), "audios")
+    #root = osp.join(rospack.get_path("sound_segmentation"), "audios")
+    root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
 
     epochs = 300
     batch_size = 4
@@ -180,6 +193,7 @@ if __name__ == "__main__":
     n_classes = 1
 
     label_type = "supervised"
+    #label_type = "weakly"
     task = "ssls"
     model_name = "UNet"
 
@@ -193,6 +207,8 @@ if __name__ == "__main__":
 
     #
     #save_dir = osp.join("results", dataset_name, "2021_1106_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1112_supervised_ssls_UNet")
+    save_dir = osp.join("results", dataset_name, "2021_1113_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 

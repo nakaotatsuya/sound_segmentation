@@ -14,9 +14,9 @@ import os
 import sys
 import wave
 
-def create_mixed_file(val=False):
+def create_mixed_file(data="audios", sr=16000, val=False):
     rospack = rospkg.RosPack()
-    file_path = osp.join(rospack.get_path("sound_segmentation"), "audios")
+    file_path = osp.join(rospack.get_path("sound_segmentation"), data)
     wav_file_path = osp.join(file_path, "wav")
     class_names = os.listdir(wav_file_path)
     chosen_classes = random.sample(class_names, 2)
@@ -75,6 +75,8 @@ def create_mixed_file(val=False):
     #train or val
     if val:
         train_path = val_path
+    if not osp.exists(train_path):
+        os.makedirs(train_path)
     file_num = len(os.listdir(train_path)) + 1
     train_path = osp.join(train_path, "{:0=5d}".format(file_num))
     if not osp.exists(train_path):
@@ -83,12 +85,14 @@ def create_mixed_file(val=False):
     #print(room.mic_array.signals.T.shape)
     #print(wav_data.data.shape)
 
-    save_wave = room.mic_array.signals.T[:24000]
+    # 24000, 220500
+    save_wave = room.mic_array.signals.T[:220500]
     #print(save_wave.shape)
-    wavio.write(osp.join(train_path, "{}_{}.wav".format(chosen_classes[0], chosen_classes[1])), save_wave, 16000, sampwidth=3)
 
-    wavio.write(osp.join(train_path, "{}.wav".format(chosen_classes[0])), wav_data.data, 16000, sampwidth=3)
-    wavio.write(osp.join(train_path, "{}.wav".format(chosen_classes[1])), wav_data2.data, 16000, sampwidth=3)
+    wavio.write(osp.join(train_path, "{}_{}.wav".format(chosen_classes[0], chosen_classes[1])), save_wave, sr, sampwidth=3)
+
+    wavio.write(osp.join(train_path, "{}.wav".format(chosen_classes[0])), wav_data.data, sr, sampwidth=3)
+    wavio.write(osp.join(train_path, "{}.wav".format(chosen_classes[1])), wav_data2.data, sr, sampwidth=3)
 
     with open(osp.join(train_path, "sound_direction.txt"), mode="w") as f:
         for c, t in zip(chosen_classes, chosen_theta):
@@ -107,5 +111,5 @@ def create_mixed_file(val=False):
     #plt.show()
 
 if __name__ == "__main__":
-    for i in range(1):
-        create_mixed_file(val=True)
+    for i in range(400):
+        create_mixed_file(data="esc50", sr=44100, val=False)

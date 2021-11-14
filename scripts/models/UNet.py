@@ -40,6 +40,7 @@ class UNet(BasicModule):
             nn.Conv2d(512, 512, 3, stride=2, padding=1),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
+            nn.Dropout()
         )
 
         self.conv_block6 = nn.Sequential(

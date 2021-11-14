@@ -1,5 +1,5 @@
-from model import FCN8s, UNet, CRNN, Deeplabv3plus, CRNN_SED
-from models import UNet
+#from model import FCN8s, UNet, CRNN, Deeplabv3plus, CRNN_SED
+from models import UNet, Deeplabv3plus
 
 def read_model(model_name, n_classes, angular_resolution, input_dim):
     if model_name == "FCN8s":

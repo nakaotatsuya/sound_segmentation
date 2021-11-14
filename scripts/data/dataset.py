@@ -24,7 +24,7 @@ class SoundSegmentationDataset(data.Dataset):
         self.angular_resolution = angular_resolution
         self.input_dim = input_dim
         
-        self.duration = 96 #93 to 96
+        self.duration = 512 #93 to 96
         self.freq_bins = 256
         self.n_classes = n_classes
 
@@ -76,7 +76,11 @@ class SoundSegmentationDataset(data.Dataset):
                     if self.mic_num == 8:
                         stft = stft[:, :, 1:len(stft.T) - 1]
                         #prepare 96
-                        stft = np.concatenate((stft, stft[:,:, len(stft.T)-4 : len(stft.T)-1]), axis=2)
+                        #stft = stft[:,:,1:len(stft.T)]
+                        #stft = np.concatenate((stft, stft[:,:, len(stft.T)-4 : len(stft.T)-1]), axis=2)
+
+                        #prepare 512
+                        stft = stft[:,:, :512]
                         #print(stft.shape)
                         mixture_phase = np.angle(stft[0])
                         for nchan in range(self.mic_num):
@@ -90,16 +94,20 @@ class SoundSegmentationDataset(data.Dataset):
                                 raise ValueError("Please use spatial feature")
 
                 else:
-                    stft = stft[:, 1:len(stft.T) - 1]
+                    #stft = stft[:, 1:len(stft.T) - 1]
                     #print(stft.shape) #256, 93
                     #print(stft[:, len(stft.T) - 4 : len(stft.T) - 1].shape)
-                    #prepare 96 
-                    stft = np.hstack((stft, stft[:, len(stft.T)-4 : len(stft.T)-1]))
+                    #prepare 96
+                    stft = stft[:, 1:len(stft.T)]
+                    #stft = np.hstack((stft, stft[:, len(stft.T)-4 : len(stft.T)-1]))
                     #print(stft.shape)
+
+                    #prepare 512
+                    stft = stft[:, :512]
                     angle = c_angle_dict[filename[:-4]]
                     #print(filename[:-4])
                     #print(angle)
-                    angle = np.rad2deg(angle)
+                    angle = np.rad2deg(angle) + 0.1
                     #print(angle)
                     angle = int(angle) // (360 // self.angular_resolution)
                     #print(angle)
@@ -139,14 +147,14 @@ if __name__ == "__main__":
     import rospkg
     import sys
     rospack = rospkg.RosPack()
-    root = osp.join(rospack.get_path("sound_segmentation"), "audios")
+    root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
     
     ssd = SoundSegmentationDataset(root, split="val", spatial_type="ipd")
 
     loader = DataLoader(ssd, batch_size=1)
     for i, (images, labels, phase) in enumerate(loader):
-        #print(images.shape)
-        #print(labels.shape)
-        #print(phase.shape)
+        print(images.shape)
+        print(labels.shape)
+        print(phase.shape)
         sys.exit()
     #print(len(ssd))

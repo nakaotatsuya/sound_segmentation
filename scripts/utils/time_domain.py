@@ -50,9 +50,10 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
                 #filename = label.index[index_num // ang_reso] + "_" + str((360 // ang_reso) * (index_num % ang_reso)) + "deg_prediction.wav"
                 filename = str(index_num // ang_reso) + "_" + str((360 // ang_reso) * (index_num % ang_reso)) + "deg_prediction.wav"
 
-            _, Y_pred_wave = signal.istft(Zxx=Y_complex, fs=16000, nperseg=512, input_onesided=False)
+            sr = 44100
+            _, Y_pred_wave = signal.istft(Zxx=Y_complex, fs=sr, nperseg=512, input_onesided=False)
             Y_pred_wave = Y_pred_wave.real
-            sf.write(pred_dir + "/" + filename, Y_pred_wave.real, 16000, subtype="PCM_16")
+            sf.write(pred_dir + "/" + filename, Y_pred_wave.real, sr, subtype="PCM_16")
 
             # calculate SDR
             if classes == 1:
@@ -65,7 +66,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
                     c_angle_dict[c] = float(angle)
                 #print(c_angle_dict)
                 for class_name, angle in c_angle_dict.items():
-                    angle = np.rad2deg(angle)
+                    angle = np.rad2deg(angle) + 0.1
                     #print(int(angle))
                     if index_num == int(angle) // (360 // ang_reso):
                         Y_true_wave, _ = sf.read(data_dir + "/" + class_name + ".wav")
@@ -74,7 +75,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
             # else:                
             #     Y_true_wave, _ = sf.read(data_dir + "/" + label.index[index_num // ang_reso] + ".wav")
             
-            Y_true_wave = Y_true_wave[:len(Y_pred_wave)]
+            #Y_true_wave = Y_true_wave[:len(Y_pred_wave)]
             #X_wave = X_wave[:len(Y_pred_wave)]
 
             #sdr_base, sir_base, sar_base, per_base = bss_eval_sources(Y_true_wave[np.newaxis,:], X_wave[np.newaxis,:], compute_permutation=False)
