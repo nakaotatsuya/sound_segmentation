@@ -34,7 +34,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
 
     for index_num in range(plot_num):
         if Y_true[no][index_num].max() > 0:
-            #print(index_num)
+            print(index_num)
             Y_linear = 10 ** ((Y_pred[no][index_num] * 120 - 120) / 20)
             Y_linear = np.vstack((Y_linear, Y_linear[::-1]))
 
@@ -48,9 +48,13 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
                 filename = str(index_num) + "_prediction.wav"
             else:
                 #filename = label.index[index_num // ang_reso] + "_" + str((360 // ang_reso) * (index_num % ang_reso)) + "deg_prediction.wav"
-                filename = str(index_num // ang_reso) + "_" + str((360 // ang_reso) * (index_num % ang_reso)) + "deg_prediction.wav"
+                #filename = str(index_num // ang_reso) + "_" + str((360 // ang_reso) * (index_num % ang_reso)) + "deg_prediction.wav"
+                ele = index_num // 8
+                azi = index_num % 8
 
-            sr = 44100
+                filename = str(index_num // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_prediction.wav"
+
+            sr = 44100 #16000 or 44100
             _, Y_pred_wave = signal.istft(Zxx=Y_complex, fs=sr, nperseg=512, input_onesided=False)
             Y_pred_wave = Y_pred_wave.real
             sf.write(pred_dir + "/" + filename, Y_pred_wave.real, sr, subtype="PCM_16")
@@ -62,7 +66,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
                     direction = f.read().split("\n")[:-1]
                 c_angle_dict = {}
                 for c_angle in direction:
-                    c, angle = c_angle.split(" ")
+                    c, angle, ele = c_angle.split(" ")
                     c_angle_dict[c] = float(angle)
                 #print(c_angle_dict)
                 for class_name, angle in c_angle_dict.items():

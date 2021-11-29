@@ -184,11 +184,12 @@ def val():
 if __name__ == "__main__":
     rospack = rospkg.RosPack()
     #root = osp.join(rospack.get_path("sound_segmentation"), "audios")
-    root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
+    #root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
+    root = osp.join(rospack.get_path("sound_segmentation"), "sep_esc50")
 
-    epochs = 300
-    batch_size = 4
-    lr = 0.001
+    epochs = 600
+    batch_size = 8
+    lr = 0.002
 
     n_classes = 1
 
@@ -208,14 +209,18 @@ if __name__ == "__main__":
     #
     #save_dir = osp.join("results", dataset_name, "2021_1106_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1112_supervised_ssls_UNet")
-    save_dir = osp.join("results", dataset_name, "2021_1113_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1113_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1122_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1124_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1125_supervised_ssls_UNet")
+    save_dir = osp.join("results", dataset_name, "2021_1126_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 
     spatial_type = "ipd"
-    mic_num = 8
-    angular_resolution = 24
-    if mic_num == 8:
+    mic_num = 8 * 2
+    angular_resolution = 8 * 5
+    if mic_num == 8 * 2:
         input_dim = mic_num * 2 - 1
     else:
         raise ValueError("mic num should be 8")

@@ -99,7 +99,9 @@ def plot_event(Y_true, Y_pred, no, save_dir, classes, ang_reso, label):
 def plot_mixture_stft(X, no, save_dir):
     pred_dir = _pred_dir_make(no, save_dir)
 
-    plt.pcolormesh((X[no][0]))
+    freq = np.linspace(0, 22050, 256)
+    time = np.linspace(0, 5, 512)
+    plt.pcolormesh(time, freq,(X[no][0]))
     plt.xlabel("time")
     plt.ylabel('frequency')
     plt.clim(0, 1)
@@ -121,15 +123,23 @@ def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso):
         
     Y_true_total = np.zeros(Y_true[0][0].shape)
     Y_pred_total = np.zeros(Y_pred[0][0].shape)
+
+    freq = np.linspace(0, 22050, 256)
+    time = np.linspace(0, 5, 512)
+    print(freq.shape)
     for i in range(plot_num):
-        if Y_true[no][i].max() > 0: 
-            plt.pcolormesh((Y_true[no][i]))
+        if Y_true[no][i].max() > 0:
+            #print(Y_true[no][i].shape)
+            plt.pcolormesh(time, freq, (Y_true[no][i]))
+            ele = i // 8
+            azi = i % 8
             if ang_reso == 1:
                 #plt.title(label.index[i] + "_truth")
                 plt.title(str(i) + "_truth")
             else:
                 #plt.title(label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_truth")
-                plt.title(str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_truth")
+                #plt.title(str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_truth")
+                plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
             plt.xlabel("time")
             plt.ylabel(ylabel)
             plt.clim(0, 1)
@@ -139,16 +149,20 @@ def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso):
                 plt.savefig(pred_dir + "/" + str(i) + "_true.png")
             else:
                 #plt.savefig(pred_dir + "/" + label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_true.png")
-                plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_true.png")
+                #plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_true.png")
+                #ele = i // 8
+                #azi = i % 8
+                plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
             plt.close()
 
-            plt.pcolormesh((Y_pred[no][i]))
+            plt.pcolormesh(time, freq, (Y_pred[no][i]))
             if ang_reso == 1:
                 #plt.title(label.index[i] + "_prediction")
                 plt.title(str(i) + "_prediction")
             else:
                 #plt.title(label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_prediction")
-                plt.title(str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_prediction")
+                #plt.title(str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_prediction")
+                plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")
             plt.xlabel("time")
             plt.ylabel(ylabel)
             plt.clim(0, 1)
@@ -158,7 +172,10 @@ def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso):
                 plt.savefig(pred_dir + "/" + str(i) + "_pred.png")
             else:
                 #plt.savefig(pred_dir + "/" + label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_pred.png")
-                plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_pred.png")
+                #plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_pred.png")
+                #ele = i // 8
+                #azi = i % 8
+                plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")
             plt.close()
             
         #Y_true_total += (Y_true[no][i] > 0.45) * (i + 4)

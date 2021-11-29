@@ -15,38 +15,38 @@ class UNet(BasicModule):
         self.conv_block1 = nn.Sequential(
             nn.Conv2d(self.input_dim, 64, 3, stride=2, padding=1),
             nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
         )
 
         self.conv_block2 = nn.Sequential(
             nn.Conv2d(64, 128, 3, stride=2, padding=1),
             nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
         )
 
         self.conv_block3 = nn.Sequential(
             nn.Conv2d(128, 256, 3, stride=2, padding=1),
             nn.BatchNorm2d(256),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
         )
 
         self.conv_block4 = nn.Sequential(
             nn.Conv2d(256, 512, 3, stride=2, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
         )
 
         self.conv_block5 = nn.Sequential(
             nn.Conv2d(512, 512, 3, stride=2, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
-            nn.Dropout()
+            nn.LeakyReLU(0.2, inplace=True),
+            #nn.Dropout()
         )
 
         self.conv_block6 = nn.Sequential(
             nn.Conv2d(512, 512, 3, stride=2, padding=1),
             nn.BatchNorm2d(512),
-            nn.ReLU(inplace=True),
+            nn.LeakyReLU(0.2, inplace=True),
         )
 
         
@@ -54,30 +54,35 @@ class UNet(BasicModule):
             nn.ConvTranspose2d(512, 512, 2, stride=2),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
         )
 
         self.deconv_block4 = nn.Sequential(
             nn.ConvTranspose2d(512, 512, 2, stride=2),
             nn.BatchNorm2d(512),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
         )
 
         self.deconv_block3 = nn.Sequential(
             nn.ConvTranspose2d(1024, 256, 2, stride=2),
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
         )
 
         self.deconv_block2 = nn.Sequential(
             nn.ConvTranspose2d(512, 128, 2, stride=2),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
         )
 
         self.deconv_block1 = nn.Sequential(
             nn.ConvTranspose2d(256, 64, 2, stride=2),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
+            nn.Dropout(0.5),
         )
 
         self.deconv_block0 = nn.Sequential(

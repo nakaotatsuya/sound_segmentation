@@ -1,1 +1,1 @@
-from .dataset import SoundSegmentationDataset
+from .dataset2 import SoundSegmentationDataset
