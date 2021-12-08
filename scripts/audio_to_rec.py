@@ -88,7 +88,7 @@ class AudioToRec():
             f, t, Zxx = sig.stft(self.a_lis[0], fs=fs, nperseg=nperseg)
             #print(t.shape) #80
             #print(f.shape) #1025
-            #print(Zxx[100][30]) #1025*80
+            print(Zxx[100][30]) #1025*80
 
             #self.a_lis[1:] is the others'.
             sin_theta_vec = []
@@ -96,13 +96,14 @@ class AudioToRec():
             Zxx2_vec = []
             for i in range(7):
                 f2, t2, Zxx2 = sig.stft(self.a_lis[i+1], fs=fs, nperseg=nperseg)
+                print(Zxx2[100][30])
                 #calculate angle diff
                 theta1 = np.arctan2(Zxx.imag, Zxx.real)
                 theta2 = np.arctan2(Zxx2.imag, Zxx2.real)
                 #theta = np.arctan2((Zxx2 - Zxx).imag, (Zxx2 - Zxx).real)
                 #print(theta)
                 theta = theta2 - theta1
-                print(theta[100][30])
+                #print(theta[100][30])
                 sin_theta = np.sin(theta)
                 #print(sin_theta[0][0])
                 cos_theta = np.cos(theta)
@@ -114,7 +115,7 @@ class AudioToRec():
             if self.first:
                 self.first = False
                 fig = plt.figure()
-                print(self.a_lis.T)
+                #print(self.a_lis.T)
                 wavio.write(osp.join(self.save_dir, "out.wav"), self.a_lis.T, 16000, sampwidth=3)
                 print("Audio wav file was saved")
 
@@ -152,7 +153,7 @@ class AudioToRec():
                 # ax.set_title("STFT")
                 # ax.set_ylabel("frequency")
                 # ax.set_xlabel("Time")
-                # plt.show()
+                plt.show()
 
         # if self.first_100 <= 300:
         #     self.a_lis = np.append(self.a_lis, data_reshaped, axis=1)

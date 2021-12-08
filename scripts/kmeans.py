@@ -4,7 +4,7 @@ import os
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn import cluster
-import rospkg
+#import rospkg
 import os.path as osp
 import wavio
 import soundfile as sf
@@ -17,9 +17,20 @@ from umap import UMAP
 
 import seaborn as sns
 import pandas as pd
+import sys
 
-rospack = rospkg.RosPack()
-file_path = osp.join(rospack.get_path("sound_segmentation"), "audios")
+#rospack = rospkg.RosPack()
+#file_path = osp.join(rospack.get_path("sound_segmentation"), "audios")
+
+#cur_dir = os.getcwd()
+#file_path = osp.join(cur_dir, "../audios")
+
+os.chdir("../")
+
+file_path = osp.join(osp.dirname(osp.abspath(__file__)), "audios")
+print(file_path)
+#sys.exit()
+
 wav_file_path = osp.join(file_path, "wav")
 class_names = os.listdir(wav_file_path)
 print(class_names)
@@ -28,15 +39,16 @@ original_dataset = np.empty((1,24832))
 print(original_dataset.shape)
 
 first=True
-count = 0
-for c in class_names:
-    # if count == 6:
-    #     break
+true_label = np.array([])
+for i, c in enumerate(class_names):
     print(c)
     class_path = osp.join(wav_file_path, c)
     data_names = os.listdir(class_path)
-    count += 1
+    data_names.sort()
+    
     for d in data_names:
+        true_label = np.append(true_label, i)
+        print(d)
         data_path = osp.join(class_path, d)
         #wav_data = wavio.read(data_path)
         #print(wav_data)
@@ -60,31 +72,41 @@ for c in class_names:
 print(original_dataset[0])
 x = original_dataset
 
+print(true_label)
+
 #TSNE
-arr_tsne = TSNE(n_components=2, random_state=0, verbose=1).fit_transform(x)
-umap = UMAP(n_components=2, random_state=0, n_neighbors=5).fit_transform(x)
-print(arr_tsne.shape)
+#arr_tsne = TSNE(n_components=2, random_state=0, verbose=1).fit_transform(x)
+pca = PCA(n_components=50, random_state=0)
+x = pca.fit_transform(x)
+umap = UMAP(n_components=3, random_state=0, n_neighbors=4).fit_transform(x)
+#print(arr_tsne.shape)
+print(umap.shape)
 
-df_tsne = pd.DataFrame(umap, columns=["tsne_1", "tsne_2"])
-sns.scatterplot(x="tsne_1", y="tsne_2", data=df_tsne, palette="Set1")
-plt.show()
 
-
-# pca = PCA(n_components=100)
-# pca.fit(original_dataset)
-
-# x = pca.transform(original_dataset)
-# print(x.shape)
+# df_tsne = pd.DataFrame(umap, columns=["tsne_1", "tsne_2"])
+# sns.scatterplot(x="tsne_1", y="tsne_2", data=df_tsne, palette="Set1")
+# plt.show()
 
 # model = cluster.KMeans(n_clusters=6, init="k-means++", n_init=10, max_iter=400, tol=1e-04, random_state=0)
 # #model = cluster.AgglomerativeClustering(n_clusters=6, linkage="ward")
 # #model = cluster.AgglomerativeClustering(n_clusters=6, linkage="single")
 # #model = cluster.AffinityPropagation()
-model = cluster.DBSCAN(eps=1.3, min_samples=10)
-model.fit(arr_tsne)
-#model.fit(original_dataset)
+
+model = cluster.DBSCAN(eps=0.8, min_samples=5)
+model.fit(umap)
 print(model.labels_)
 
+#dbscan result
+# df_tsne["label"] = model.labels_
+# sns.scatterplot(x="tsne_1", y="tsne_2", data=df_tsne, hue="label", palette="Set1")
+# plt.show()
+
+#true
+# df_tsne["label"] = true_label
+# sns.scatterplot(x="tsne_1", y="tsne_2", data=df_tsne, hue="label", palette="Set1")
+# plt.show()
+
+# xmeans
 # xm_c = kmeans_plusplus_initializer(x, 2).initialize()
 # xm_i = xmeans(data=x, initial_centers=xm_c, kmax=20, ccore=True)
 # xm_i.process()

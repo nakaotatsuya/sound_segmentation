@@ -11,7 +11,7 @@
   <arg name="low_cut_freq" default="2000" />
 
   <arg name="audio_topic" default="/tamago1/audio" />
-  <arg name="train_data" default="aaaaa" />
+  <arg name="audio_topic2" default="/tamago2/audio" />
 
   <include file="$(find sound_classification)/launch/detect_sound.launch" >
     <arg name="n_channel" value="$(arg n_channel)" />
@@ -19,13 +19,22 @@
     <arg name="mic_sampling_rate" value="$(arg mic_sampling_rate)" />
     <arg name="threshold" value="0.5" />
     <arg name="audio_topic" value="$(arg audio_topic)" />
-    <arg name="train_data" value="$(arg train_data)" />
+    <arg name="train_data" value="aaaaa" />
     <arg name="spectrogram_period" value="0.5" />
   </include>
-    
-  <node name="create_wav" pkg="sound_segmentation" type="create_wav.py" output="screen">
-    <remap from="~in_sound" to="/sound_detector_volume/in_sound" />
+
+  <node name="headered_audio" pkg="sound_segmentation" type="headered_audio.py" output="screen">
     <remap from="~audio" to="$(arg audio_topic)" />
+  </node>
+  
+  <node name="headered_audio2" pkg="sound_segmentation" type="headered_audio.py" output="screen">
+    <remap from="~audio" to="$(arg audio_topic2)" />
+  </node>
+  
+  <node name="create_16mic_wav" pkg="sound_segmentation" type="create_16mic_wav.py" output="screen">
+    <remap from="~in_sound" to="/sound_detector_volume/in_sound" />
+    <remap from="~audio1" to="/headered_audio/output" />
+    <remap from="~audio2" to="/headered_audio2/output"/>
     <rosparam subst_value="true">
       n_channel: $(arg n_channel)
       mic_sampling_rate: $(arg mic_sampling_rate)
