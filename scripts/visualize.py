@@ -14,9 +14,9 @@ import soundfile as sf
 from scipy import signal
 
 rospack = rospkg.RosPack()
-file_path = osp.join(rospack.get_path("sound_segmentation"), "esc50")
+file_path = osp.join(rospack.get_path("sound_segmentation"), "audios")
 #wav_file_path = osp.join(file_path, "val", "00009")
-wav_file_path = osp.join(file_path, "train", "00001")
+wav_file_path = osp.join(file_path, "real_val", "00005")
 
 filelist = os.listdir(wav_file_path)
 
@@ -36,7 +36,7 @@ plt.plot(x, waveform.T[0])
 plt.show()
 
 ## spectrogram and phase
-duration = 512
+duration = 95 #512 or 96
 freq_bins = 256
 input_dim = 31
 mixture = np.zeros((input_dim, freq_bins, duration), dtype=np.float32)
@@ -67,23 +67,23 @@ for filename in filelist:
             normalize(mixture)
 
 
-# plt.pcolormesh(mixture[0])
-# plt.show()
+plt.pcolormesh(mixture[0])
+plt.show()
 
-# plt.pcolormesh(mixture[1])
-# plt.show()
+plt.pcolormesh(mixture[1])
+plt.show()
 
-# plt.pcolormesh(mixture[2])
-# plt.show()
+plt.pcolormesh(mixture[2])
+plt.show()
 
-# plt.pcolormesh(mixture[29])
-# plt.show()
+plt.pcolormesh(mixture[15])
+plt.show()
 
-# plt.pcolormesh(mixture[30])
-# plt.show()
+plt.pcolormesh(mixture[16])
+plt.show()
 
-# plt.pcolormesh(mixture_phase)
-# plt.show()
+plt.pcolormesh(mixture_phase)
+plt.show()
 
 for filename in filelist:
     if filename[-4:] == ".wav":

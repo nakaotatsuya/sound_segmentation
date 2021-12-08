@@ -13,11 +13,12 @@ import random
 import os
 import sys
 import wave
+import soundfile as sf
 
-def create_mixed_file(data="audios", sr=16000, val=False, sep=True):
+def create_mixed_file(data="audios", sr=16000, val=False, sep=True, noise=True):
     rospack = rospkg.RosPack()
     file_path = osp.join(rospack.get_path("sound_segmentation"), data)
-    wav_file_path = osp.join(file_path, "wav")
+    wav_file_path = osp.join(file_path, "wav_house2")
     class_names = os.listdir(wav_file_path)
     chosen_classes = random.sample(class_names, 2)
 
@@ -35,22 +36,64 @@ def create_mixed_file(data="audios", sr=16000, val=False, sep=True):
     wav_data = wavio.read(file1)
     wav_data2 = wavio.read(file2)
 
-    test1 = wav_data.data.copy()
-    test1[100000:] = 0
+    #test_path = "/home/nakaotatsuya/ros/kinetic/src/sound_segmentation/audios/real_val/00001/test_00086.wav"
+    #wav_data_test = wavio.read(test_path)
+    #print(wav_data_test.data.shape)
 
-    test2 = wav_data2.data.copy()
-    test2[:110000] = 0
+    if data=="sep_esc50" or data=="esc50":
+        test1 = wav_data.data.copy()
+        test1[100000:] = 0
 
-    #wav_data = wave.open(osp.join(wav_file_path, "tap/output.wav"), "r")
-    #wav_data2 = wavio.read(file2, "r")
-    #wav_data = wavio.read(osp.join(wav_file_path, "clap/output1.wav"))
-    #wav_data2 = wavio.read(osp.join(wav_file_path, "kettle/output1.wav"))
+        test2 = wav_data2.data.copy()
+        test2[:110000] = 0
+    else:
+        test1 = wav_data.data.copy()
+        test1[12000:] = 0
+
+        test2 = wav_data2.data.copy()
+        test2[:12000] = 0
 
     #create a simulate room #############################
-    corners = np.array([[0,0],[0,6],[6,6],[6,0]]).T
-    room = pra.Room.from_corners(corners, fs=wav_data.rate, max_order=3, absorption=0.2)
-    room.extrude(3.)
+    #corners = np.array([[0,0],[0,6],[6,6],[6,0]]).T
 
+    #room_dim = [6, 6, 3]
+    #e_absorption, max_order = pra.inverse_sabine(0.5, room_dim)
+    #room = pra.Room.from_corners(corners, fs=wav_data.rate, max_order=3, absorption=0.7)
+    
+    #room = pra.Room.from_corners(corners, fs=wav_data.rate, materials=pra.Material(0.24), max_order=3)
+    #room.extrude(3.)
+
+    #make room simulation x, y, z
+    x = 8.3
+    y = 6.5
+    z = 2.8
+    room_dim = [x, y, z]
+    e_absorption, max_order = pra.inverse_sabine(0.5, room_dim)
+    #print(e_absorption, max_order)
+
+    room = pra.ShoeBox(
+        room_dim, fs=16000, materials=pra.Material(e_absorption), max_order=20)
+
+    #set the mic arrays.
+    mic_x = random.uniform(1 , x-1)
+    mic_y = random.uniform(1 , y-1)
+    R = pra.circular_2D_array(center=[mic_x, mic_y], M=8, phi0=0, radius=0.04)
+    R2 = pra.circular_2D_array(center=[mic_x,1.02], M=8, phi0=0, radius=0.04)
+    b = np.array([0.91]*8)[None]
+    c = np.array([mic_y]*8)[None]
+    R = np.concatenate([R, b], axis=0)
+    R2 = np.concatenate([R2[0][None], c, R2[1][None]], axis=0)
+
+    #print(R.shape)
+    #print(R2.shape)
+    R_R = np.hstack((R, R2))
+    #print(R_R)
+    #room.add_microphone_array(pra.MicrophoneArray(R, room.fs))
+    #room.add_microphone_array(pra.MicrophoneArray(R2, room.fs))
+
+    room.add_microphone_array(pra.MicrophoneArray(R_R, room.fs))
+
+    #set the sound sources
     deg = np.arange(360)
     deg = deg[::45]
     theta = [np.deg2rad(i) for i in deg]
@@ -62,21 +105,45 @@ def create_mixed_file(data="audios", sr=16000, val=False, sep=True):
     chosen_ele_theta = random.sample(ele_theta, 2)
     print(np.rad2deg(chosen_ele_theta))
 
+    #sep or not sep (for train, not sep  : for val, sep)
     if not sep:
-        room.add_source([3.+ np.cos(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 3.+ np.sin(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 1. + np.sin(chosen_ele_theta[0])], signal=wav_data.data.T[0])
-        room.add_source([3.+ np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 3.+ np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 1. + np.sin(chosen_ele_theta[1])], signal=wav_data2.data.T[0])
+        room.add_source([mic_x + np.cos(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), mic_y + np.sin(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 0.91 + np.sin(chosen_ele_theta[0])], signal=wav_data.data.T[0])
+        room.add_source([mic_x + np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), mic_y + np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 0.91 + np.sin(chosen_ele_theta[1])], signal=wav_data2.data.T[0])
     else:
-        room.add_source([3.+ np.cos(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 3.+ np.sin(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 1. + np.sin(chosen_ele_theta[0])], signal=test1.T[0])
-        room.add_source([3.+ np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 3.+ np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 1. + np.sin(chosen_ele_theta[1])], signal=test2.T[0])
+        radius = 1
+        radius2 = 1
+        room.add_source([mic_x + radius * np.cos(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), mic_y + radius * np.sin(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 0.91 + radius * np.sin(chosen_ele_theta[0])], signal=test1.T[0])
+        room.add_source([mic_x + radius2 * np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), mic_y+ radius2 * np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 0.91 + radius2 * np.sin(chosen_ele_theta[1])], signal=test2.T[0])
 
-    R = pra.circular_2D_array(center=[3.,3.], M=8, phi0=0, radius=0.04)
-    R2 = pra.circular_2D_array(center=[3.,1.05], M=8, phi0=0, radius=0.04)
-    b = np.array([1,1,1,1,1,1,1,1])[None]
-    c = np.array([3,3,3,3,3,3,3,3])[None]
-    R = np.concatenate([R, b], axis=0)
-    R2 = np.concatenate([c, R2], axis=0)
-    room.add_microphone_array(pra.MicrophoneArray(R, room.fs))
-    room.add_microphone_array(pra.MicrophoneArray(R2, room.fs))
+    #add noise
+    random_noise_num = random.randint(1,4)
+    noise_path = osp.join(file_path, "noise")
+
+    for i in range(random_noise_num):
+        noise_file = random.choice(os.listdir(noise_path))
+        #noise_file = "EWYlONtV2Tk_0.wav"
+        noise_file = osp.join(noise_path, noise_file)
+        print(noise_file)
+
+        noise = wavio.read(noise_file)
+        #print(noise.data)
+
+        chosen_x = random.uniform(0, x)
+        chosen_y = random.uniform(0, y)
+        chosen_z = random.uniform(0, z)
+        print(chosen_x, chosen_y, chosen_z)
+
+        noise_wave = noise.data.T[0].copy()
+        #print(noise_wave.shape)
+        noise_wave = noise_wave[:wav_data.data.shape[0]]
+        print(noise_wave.shape)
+        #print(noise_wave)
+        if not noise_wave.shape[0]:
+            continue
+
+        if noise:
+            room.add_source([chosen_x, chosen_y, chosen_z], signal=noise_wave)
+    
     #room.plot_rir()
     #fig = plt.gcf()
     #fig.set_size_inches(20,10)
@@ -106,10 +173,11 @@ def create_mixed_file(data="audios", sr=16000, val=False, sep=True):
     #print(wav_data.data.shape)
 
     # 24000, 220500
-    save_wave = room.mic_array.signals.T[:220500] #for esc50
+    #save_wave = room.mic_array.signals.T[:220500] #for esc50
 
     #save_wave = room.mic_array.signals.T[:24000]
-    #print(save_wave.shape)
+    save_wave = room.mic_array.signals.T
+    print(save_wave.shape)
 
     if not sep:
         wavio.write(osp.join(train_path, "{}_{}.wav".format(chosen_classes[0], chosen_classes[1])), save_wave, sr, sampwidth=3)
@@ -128,20 +196,32 @@ def create_mixed_file(data="audios", sr=16000, val=False, sep=True):
             f.write(" ")
             f.write("{}\n".format(str(ele)))
 
+    # rt60 = room.measure_rt60()
+    # print(rt60)
+    
+    # impulse_responses = room.compute_rir()
+    # RIR = np.array(room.rir)
+    # print(RIR[0][0].shape)
+    # rt60 = pra.experimental.measure_rt60(RIR[0][0], fs=16000)
+
+    # #plt.plot(room.rir[0][0])
+    # #plt.show()
+    # print(rt60)
+
     #wavio.write(osp.join(file_path, "output_dammy_00081.wav"), room.mic_array.signals[0,:], 16000, sampwidth=3)
 
     #wavio.write(osp.join(file_path, "output_dammy_00081_multi.wav"), room.mic_array.signals.T, 16000, sampwidth=3)
 
-    fig, ax = room.plot()
-    ax.set_xlim([-1, 7])
-    ax.set_ylim([-1, 7])
-    ax.set_zlim([0, 3])
-    plt.show()
+    # fig, ax = room.plot()
+    # ax.set_xlim([-1, 9])
+    # ax.set_ylim([-1, 7])
+    # ax.set_zlim([0, 3])
+    # plt.show()
 
 if __name__ == "__main__":
-    for i in range(1):
-        create_mixed_file(data="sep_esc50", sr=44100, val=True, sep=True)
-    #for i in range(10):
-    #    create_mixed_file(data="audios", sr=16000, val=True)
+    # for i in range(1):
+    #     create_mixed_file(data="sep_esc50", sr=44100, val=True, sep=True)
+    for i in range(50):
+       create_mixed_file(data="house_audios", sr=16000, val=True, sep=True, noise=True)
 
     #create_mixed_file(data="audios", sr=16000, val=True)

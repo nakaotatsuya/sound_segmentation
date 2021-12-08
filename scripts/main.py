@@ -156,9 +156,9 @@ def val():
     #    save_score_array(scores_array, save_dir)
 
     for n in range(len(preds)):
-        plot_mixture_stft(X_ins, no=n, save_dir=save_dir)
-        plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution)
-        restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir)
+        plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="prediction")
+        plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="prediction")
+        restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="prediction")
         #sys.exit()
 
     # for i in range(angular_resolution):
@@ -181,11 +181,47 @@ def val():
 
     #         sys.exit()
 
+def real_val():
+    val_dataset = SoundSegmentationDataset(dataset_dir, split="real_val", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
+
+    model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
+    model.load(osp.join(save_dir, model_name + ".pth"))
+    model.cuda()
+
+    print("Eval Start")
+    model.eval()
+    with torch.no_grad():
+        for i, (images, labels, phase) in tqdm(enumerate(val_loader)):
+            images = images.cuda()
+            labels = labels.cuda()
+            outputs = model(images)
+
+            X_in = images.data.cpu().numpy()
+            pred = outputs.data.cpu().numpy()
+            gt = labels.data.cpu().numpy()
+
+            if i == 0:
+                X_ins = X_in
+                phases = phase
+                preds = pred
+                gts = gt
+            else:
+                X_ins = np.concatenate((X_ins, X_in), axis=0)
+                phases = np.concatenate((phases, phase), axis=0)
+                preds = np.concatenate((preds, pred), axis=0)
+                gts = np.concatenate((gts, gt), axis=0)
+
+    for n in range(len(preds)):
+        plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="real_prediction")
+        plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="real_prediction")
+        restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="real_prediction")
+        
 if __name__ == "__main__":
     rospack = rospkg.RosPack()
-    #root = osp.join(rospack.get_path("sound_segmentation"), "audios")
+    root = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
     #root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
-    root = osp.join(rospack.get_path("sound_segmentation"), "sep_esc50")
+    #root = osp.join(rospack.get_path("sound_segmentation"), "sep_esc50")
 
     epochs = 600
     batch_size = 8
@@ -213,7 +249,13 @@ if __name__ == "__main__":
     #save_dir = osp.join("results", dataset_name, "2021_1122_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1124_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1125_supervised_ssls_UNet")
-    save_dir = osp.join("results", dataset_name, "2021_1126_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1126_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1129_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1130_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1202_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1203_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1205_supervised_ssls_UNet")
+    save_dir = osp.join("results", dataset_name, "2021_1206_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -226,4 +268,5 @@ if __name__ == "__main__":
         raise ValueError("mic num should be 8")
 
     #train()
-    val()
+    #val()
+    real_val()

@@ -23,8 +23,9 @@ class SoundSegmentationDataset(data.Dataset):
         self.mic_num = mic_num
         self.angular_resolution = angular_resolution
         self.input_dim = input_dim
-        
-        self.duration = 512 #93 to 96
+
+        #for esc50 : duration == 512 , for audios : duration = 96
+        self.duration = 96 #93 to 96
         self.freq_bins = 256
         self.n_classes = n_classes
 
@@ -34,6 +35,8 @@ class SoundSegmentationDataset(data.Dataset):
             mode_dir = osp.join(root, "train")
         elif split == "val":
             mode_dir = osp.join(root, "val")
+        elif split == "real_val":
+            mode_dir = osp.join(root, "real_val")
         else:
             raise ValueError("undefined")
 
@@ -50,15 +53,17 @@ class SoundSegmentationDataset(data.Dataset):
         return len(self.data_pair_folders)
 
     def __getitem__(self, index):
-        with open(osp.join(self.data_pair_folders[index], "sound_direction.txt"), "r") as f:
-            direction = f.read().split("\n")[:-1]
-            #print(direction)
+        if osp.exists(osp.join(self.data_pair_folders[index], "sound_direction.txt")):
+            with open(osp.join(self.data_pair_folders[index], "sound_direction.txt"), "r") as f:
+                direction = f.read().split("\n")[:-1]
+                #print(direction)
 
-        c_angle_dict = {}
-        for c_angle in direction:
-            c, angle, ele_angle = c_angle.split(" ")
-            c_angle_dict[c] = [float(angle), float(ele_angle)]
-
+            c_angle_dict = {}
+            for c_angle in direction:
+                c, angle, ele_angle = c_angle.split(" ")
+                c_angle_dict[c] = [float(angle), float(ele_angle)]
+        else:
+            c_angle_dict = {}
         mixture = np.zeros((self.input_dim, self.freq_bins, self.duration), dtype=np.float32)
         mixture_phase = np.zeros((self.freq_bins * 2, self.duration), dtype=np.float32)
 
@@ -77,14 +82,17 @@ class SoundSegmentationDataset(data.Dataset):
                 #print(t)
                 if "_" in filename:
                     if self.mic_num == 8 * 2:
-                        stft = stft[:, :, 1:len(stft.T) - 1]
+                        #stft = stft[:, :, 1:len(stft.T) - 1]
                         #prepare 96
                         #stft = stft[:,:,1:len(stft.T)]
                         #stft = np.concatenate((stft, stft[:,:, len(stft.T)-4 : len(stft.T)-1]), axis=2)
-
-                        #prepare 512
-                        stft = stft[:,:, :512]
                         #print(stft.shape)
+                        stft = stft[:,:,:96]
+                        ####
+                        
+                        #prepare 512
+                        #stft = stft[:,:, :512]
+                        ###
                         mixture_phase = np.angle(stft[0])
                         for nchan in range(self.mic_num):
                             if self.spatial_type == "ipd":
@@ -100,13 +108,18 @@ class SoundSegmentationDataset(data.Dataset):
                     #stft = stft[:, 1:len(stft.T) - 1]
                     #print(stft.shape) #256, 93
                     #print(stft[:, len(stft.T) - 4 : len(stft.T) - 1].shape)
+                    
                     #prepare 96
-                    stft = stft[:, 1:len(stft.T)]
-                    #stft = np.hstack((stft, stft[:, len(stft.T)-4 : len(stft.T)-1]))
+                    #stft = stft[:, 1:len(stft.T)]
+                    ###stft = np.hstack((stft, stft[:, len(stft.T)-4 : len(stft.T)-1]))
+                    stft = stft[:, :96]
                     #print(stft.shape)
+                    ###
 
                     #prepare 512
-                    stft = stft[:, :512]
+                    #stft = stft[:, :512]
+                    ###
+                    
                     angle = c_angle_dict[filename[:-4]][0]
                     ele_angle = c_angle_dict[filename[:-4]][1]
                     #print(filename[:-4])

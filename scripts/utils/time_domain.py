@@ -9,18 +9,18 @@ import re
 import wavio
 import sys
 
-def _pred_dir_make(no, save_dir):
-    pred_dir = os.path.join(save_dir, "prediction", str(no))
+def _pred_dir_make(no, save_dir, pred="prediction"):
+    pred_dir = os.path.join(save_dir, pred, str(no))
     if not os.path.exists(pred_dir):
         os.makedirs(pred_dir)
     
     return pred_dir
 
-def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir):
+def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir, pred="prediction"):
     #print("aaa")
     plot_num = classes * ang_reso
 
-    pred_dir = _pred_dir_make(no, save_dir)
+    pred_dir = _pred_dir_make(no, save_dir, pred)
     #print(str(no))
     data_dir = os.path.join(dataset_dir, "val", "{:0=5d}".format(no+1))
     #print(data_dir)
@@ -54,7 +54,7 @@ def restore(Y_true, Y_pred, phase, no, save_dir, classes, ang_reso, dataset_dir)
 
                 filename = str(index_num // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_prediction.wav"
 
-            sr = 44100 #16000 or 44100
+            sr = 16000 #16000 or 44100
             _, Y_pred_wave = signal.istft(Zxx=Y_complex, fs=sr, nperseg=512, input_onesided=False)
             Y_pred_wave = Y_pred_wave.real
             sf.write(pred_dir + "/" + filename, Y_pred_wave.real, sr, subtype="PCM_16")

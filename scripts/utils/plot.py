@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-def _pred_dir_make(no, save_dir):
-    pred_dir = os.path.join(save_dir, "prediction", str(no))
+def _pred_dir_make(no, save_dir, pred="prediction"):
+    pred_dir = os.path.join(save_dir, pred, str(no))
     if not os.path.exists(pred_dir):
         os.makedirs(pred_dir)
     
@@ -96,11 +96,11 @@ def plot_event(Y_true, Y_pred, no, save_dir, classes, ang_reso, label):
         plt.close()
 
         
-def plot_mixture_stft(X, no, save_dir):
-    pred_dir = _pred_dir_make(no, save_dir)
+def plot_mixture_stft(X, no, save_dir, pred):
+    pred_dir = _pred_dir_make(no, save_dir, pred)
 
     freq = np.linspace(0, 22050, 256)
-    time = np.linspace(0, 5, 512)
+    time = np.linspace(0, 5, 96)
     plt.pcolormesh(time, freq,(X[no][0]))
     plt.xlabel("time")
     plt.ylabel('frequency')
@@ -110,7 +110,7 @@ def plot_mixture_stft(X, no, save_dir):
     plt.close()
 
 
-def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso):
+def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
     print(Y_true.shape)
     plot_num = classes * ang_reso
     if ang_reso > 1:
@@ -119,16 +119,16 @@ def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso):
         ylabel = "frequency"
 
     ylabel = "frequency"
-    pred_dir = _pred_dir_make(no, save_dir)
+    pred_dir = _pred_dir_make(no, save_dir, pred)
         
     Y_true_total = np.zeros(Y_true[0][0].shape)
     Y_pred_total = np.zeros(Y_pred[0][0].shape)
 
     freq = np.linspace(0, 22050, 256)
-    time = np.linspace(0, 5, 512)
+    time = np.linspace(0, 5, 96)
     print(freq.shape)
     for i in range(plot_num):
-        if Y_true[no][i].max() > 0:
+        if Y_true[no][i].max() >= 0:
             #print(Y_true[no][i].shape)
             plt.pcolormesh(time, freq, (Y_true[no][i]))
             ele = i // 8
