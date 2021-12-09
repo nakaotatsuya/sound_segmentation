@@ -134,6 +134,28 @@ class Create16Wave():
         for i in range(0, n):
             wave = signal.filtfilt(b, a, wave)
         return wave
+
+    def highpass(self, x, samplerate, fp, fs, gpass, gstop):
+        fn = samplerate / 2.0
+        wp = 1.0 * fp / fn
+        ws = 1.0 * fs / fn
+        #print(wp)
+        #print(ws)
+        N, Wn = signal.buttord(wp, ws, gpass, gstop)
+        #print(Wn)
+        b, a = signal.butter(N, Wn, "high")
+        #print(b)
+        y = signal.filtfilt(b, a, x)
+        return y
+
+    def lowpass(self, x, samplerate, fp, fs, gpass, gstop):
+        fn = samplerate / 2.0
+        wp = 1.0 * fp / fn
+        ws = 1.0 * fs / fn
+        N, Wn = signal.buttord(wp, ws, gpass, gstop)
+        b, a = signal.butter(N, Wn, "low")
+        y = signal.filtfilt(b, a, x)
+        return y
     
     def timer_cb(self, timer):
         if len(self.audio_buffer) != self.audio_buffer_len:
@@ -153,7 +175,10 @@ class Create16Wave():
         #plt.plot(time, amplitude[0][:self.audios_buffer_len//2])
         
         #wave = self.hpf(self.combined_audios_buffer, self.mic_sampling_rate, self.low_cut_freq, 5)
-        wave = self.combined_audios_buffer
+        print(self.combined_audios_buffer.shape)
+        wave = self.highpass(self.combined_audios_buffer, self.mic_sampling_rate, 2000, 500, 3, 30)
+        wave = self.lowpass(wave, self.mic_sampling_rate, 3000, 6000, 3, 40)
+        #wave = self.combined_audios_buffer
         print(wave.T[0].shape)
 
         if not self.in_sound:
@@ -164,7 +189,7 @@ class Create16Wave():
                 listdir(self.target_dir)) + 1
             wav_file_name = osp.join(
                 self.target_dir, "{}_{:0=5d}.wav".format(self.target_class, file_num))
-            wavio.write(wav_file_name, wave, self.mic_sampling_rate, sampwidth=2)
+            wavio.write(wav_file_name, wave, self.mic_sampling_rate, sampwidth=3)
 
             wav_mono_file_name = osp.join(
                 self.target_dir, "{}_{:0=5d}_mono.wav".format(self.target_class, file_num))
