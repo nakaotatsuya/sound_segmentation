@@ -12,11 +12,13 @@ import os
 import sys
 import soundfile as sf
 from scipy import signal
+#import imageio
+from PIL import Image as _Image
 
 rospack = rospkg.RosPack()
-file_path = osp.join(rospack.get_path("sound_segmentation"), "audios")
+file_path = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
 #wav_file_path = osp.join(file_path, "val", "00009")
-wav_file_path = osp.join(file_path, "real_val", "00005")
+wav_file_path = osp.join(file_path, "visualize", "wo_real")
 
 filelist = os.listdir(wav_file_path)
 
@@ -36,7 +38,7 @@ plt.plot(x, waveform.T[0])
 plt.show()
 
 ## spectrogram and phase
-duration = 95 #512 or 96
+duration = 96 #512 or 96
 freq_bins = 256
 input_dim = 31
 mixture = np.zeros((input_dim, freq_bins, duration), dtype=np.float32)
@@ -53,9 +55,9 @@ for filename in filelist:
         if "_" in filename:
             waveform, fs = sf.read(osp.join(wav_file_path, filename))
             _, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
-            stft = stft[:, :, 1:len(stft.T)-1]
+            #stft = stft[:, :, 1:len(stft.T)-1]
 
-            stft = stft[:,:,:512]
+            stft = stft[:,:,:96]
             print(stft.shape)
             mixture_phase = np.angle(stft[0])
             for nchan in range(16):
@@ -66,24 +68,27 @@ for filename in filelist:
                     mixture[nchan*2] = np.sin(np.angle(stft[0][:256]) - np.angle(stft[nchan][:256]))
             normalize(mixture)
 
+for i in range(input_dim):
+    fig, ax = plt.subplots(figsize=(5,5))
+    ax.pcolormesh(mixture[i])
+    #plt.show()
+    fig.savefig(osp.join(wav_file_path, "file_{}.jpg".format(i)))
 
-plt.pcolormesh(mixture[0])
-plt.show()
 
-plt.pcolormesh(mixture[1])
-plt.show()
+# plt.pcolormesh(mixture[1])
+# plt.show()
 
-plt.pcolormesh(mixture[2])
-plt.show()
+# plt.pcolormesh(mixture[2])
+# plt.show()
 
-plt.pcolormesh(mixture[15])
-plt.show()
+# plt.pcolormesh(mixture[15])
+# plt.show()
 
-plt.pcolormesh(mixture[16])
-plt.show()
+# plt.pcolormesh(mixture[16])
+# plt.show()
 
-plt.pcolormesh(mixture_phase)
-plt.show()
+#plt.pcolormesh(mixture_phase)
+#plt.show()
 
 for filename in filelist:
     if filename[-4:] == ".wav":
@@ -97,4 +102,4 @@ for filename in filelist:
             
             plt.figure(figsize=(15,3))
             plt.plot(x, waveform)
-            plt.show()
+            #plt.show()

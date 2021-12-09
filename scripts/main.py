@@ -255,7 +255,7 @@ if __name__ == "__main__":
     #save_dir = osp.join("results", dataset_name, "2021_1202_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1203_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1205_supervised_ssls_UNet")
-    save_dir = osp.join("results", dataset_name, "2021_1206_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1206_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -267,6 +267,6 @@ if __name__ == "__main__":
     else:
         raise ValueError("mic num should be 8")
 
-    #train()
+    train()
     #val()
-    real_val()
+    #real_val()
