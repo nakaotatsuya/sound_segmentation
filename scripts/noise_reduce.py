@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 def envelope(y, rate, threshold):
     #print(y[0:10])
     #y_mean = maximum_filter1d(np.abs(y), mode="constant", size=rate//20)
-    y_mean = maximum_filter1d(np.abs(y), mode="constant", size=10)
+    y_mean = maximum_filter1d(np.abs(y), mode="constant", size=rate//20)
     #print(y_mean[0:10])
     mask = np.array([mean > threshold for mean in y_mean])
 
@@ -37,11 +37,15 @@ def _istft(y, hop_length, win_length):
 
 if __name__ == "__main__":
     rospack = rospkg.RosPack()
+    # wav_file_path = osp.join(rospack.get_path(
+    #     "sound_segmentation"), "audios")
+    # wav_file = osp.join(wav_file_path, "wav", "sin")
+    # waveform, fs = sf.read(osp.join(wav_file, "sin_00060.wav"))
+
     wav_file_path = osp.join(rospack.get_path(
-        "sound_segmentation"), "audios")
-    
-    wav_file = osp.join(wav_file_path, "wav", "sin")
-    waveform, fs = sf.read(osp.join(wav_file, "sin_00060.wav"))
+        "sound_segmentation"), "house_audios")
+    wav_file = osp.join(wav_file_path, "visualize", "00028")
+    waveform, fs = sf.read(osp.join(wav_file, "bottle_microwave.wav"))
     print(waveform.shape)
 
     #_, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
@@ -52,7 +56,7 @@ if __name__ == "__main__":
     n_std_thresh = 1.5
 
     #print(waveform)
-    mask, y_mean = envelope(waveform, rate=fs, threshold=0.3)
+    mask, y_mean = envelope(waveform, rate=fs, threshold=0.4)
     #print(mask)
     #print(y_mean.shape)
     #print(y_mean)

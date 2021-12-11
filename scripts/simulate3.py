@@ -22,8 +22,8 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     class_names = os.listdir(wav_file_path)
     chosen_classes = random.sample(class_names, 2)
 
-    #class1_path = osp.join(wav_file_path, chosen_classes[0])
-    class1_path = osp.join(wav_file_path, "sin")
+    class1_path = osp.join(wav_file_path, chosen_classes[0])
+    #class1_path = osp.join(wav_file_path, "sin")
     class2_path = osp.join(wav_file_path, chosen_classes[1])
     
     #choose wav file randomly
@@ -109,7 +109,7 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     #sep or not sep (for train, not sep  : for val, sep)
     if not sep:
         room.add_source([mic_x + np.cos(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), mic_y + np.sin(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 0.91 + np.sin(chosen_ele_theta[0])], signal=wav_data.data.T[0])
-        #room.add_source([mic_x + np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), mic_y + np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 0.91 + np.sin(chosen_ele_theta[1])], signal=wav_data2.data.T[0])
+        room.add_source([mic_x + np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), mic_y + np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 0.91 + np.sin(chosen_ele_theta[1])], signal=wav_data2.data.T[0])
     else:
         radius = 1
         radius2 = 1
