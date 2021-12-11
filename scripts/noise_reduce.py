@@ -35,21 +35,7 @@ def _db_to_amp(x):
 def _istft(y, hop_length, win_length):
     return librosa.istft(y, hop_length, win_length)
 
-if __name__ == "__main__":
-    rospack = rospkg.RosPack()
-    # wav_file_path = osp.join(rospack.get_path(
-    #     "sound_segmentation"), "audios")
-    # wav_file = osp.join(wav_file_path, "wav", "sin")
-    # waveform, fs = sf.read(osp.join(wav_file, "sin_00060.wav"))
-
-    wav_file_path = osp.join(rospack.get_path(
-        "sound_segmentation"), "house_audios")
-    wav_file = osp.join(wav_file_path, "visualize", "00028")
-    waveform, fs = sf.read(osp.join(wav_file, "bottle_microwave.wav"))
-    print(waveform.shape)
-
-    #_, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
-
+def reduce_noise(waveform, fs):
     n_fft = 2048
     hop_length =512
     win_length = 2048
@@ -63,11 +49,11 @@ if __name__ == "__main__":
 
     audio_clip = waveform * mask
     #print(audio_clip)
-    wavio.write(osp.join(wav_file, "sin_audio_part.wav"), audio_clip, 16000, sampwidth=3)
+    #wavio.write(osp.join(wav_file, "audio_part.wav"), audio_clip, 16000, sampwidth=3)
 
     noise_clip = waveform * (1 - mask)
     #print(noise_clip)
-    wavio.write(osp.join(wav_file, "sin_noise_part.wav"), noise_clip, 16000, sampwidth=3)
+    #wavio.write(osp.join(wav_file, "noise_part.wav"), noise_clip, 16000, sampwidth=3)
 
     for i in range(16):
         noise_stft = _stft(noise_clip.T[i], n_fft, hop_length, win_length)
@@ -135,4 +121,31 @@ if __name__ == "__main__":
             recovered_signals = np.vstack((recovered_signals, recovered_signal))
             print(recovered_signals.shape)
 
-    wavio.write(osp.join(wav_file, "sin_removed_noise.wav"), recovered_signals.T, 16000, sampwidth=3)
+    wavio.write(osp.join(wav_file, "removed_noise.wav"), recovered_signals.T, 16000, sampwidth=3)
+    
+if __name__ == "__main__":
+    rospack = rospkg.RosPack()
+    # wav_file_path = osp.join(rospack.get_path(
+    #     "sound_segmentation"), "audios")
+    # wav_file = osp.join(wav_file_path, "wav", "sin")
+    # waveform, fs = sf.read(osp.join(wav_file, "sin_00060.wav"))
+
+    wav_file_path = osp.join(rospack.get_path(
+        "sound_segmentation"), "house_audios")
+    wav_file_path = osp.join(wav_file_path, "noise_train", "00001")
+
+    filelist = os.listdir(wav_file_path)
+    print(filelist)
+    #wav_file = osp.join(wav_file_path, "noise_train", "00001")
+    for filename in filelist:
+        print("a")
+        if filename[-4:] == ".wav":
+            if "_" in filename:
+                print("b")
+                waveform, fs = sf.read(osp.join(wav_file_path, filename))
+                print(waveform.shape)
+
+    reduce_noise(waveform, fs)
+
+    #_, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
+

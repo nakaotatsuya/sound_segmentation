@@ -158,7 +158,7 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     
     #save files
     #train dir
-    train_path = osp.join(file_path, "train")
+    train_path = osp.join(file_path, "noise_train")
     val_path = osp.join(file_path, "val")
     visualize_path = osp.join(file_path, "visualize")
 
@@ -236,5 +236,5 @@ if __name__ == "__main__":
     #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=True, noise_flag=False)
 
     for i in range(1):
-        create_mixed_file(data="house_audios", sr=16000, train_type="visualize", sep=False, noise_flag=True)
+        create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
     #create_mixed_file(data="audios", sr=16000, val=True)
