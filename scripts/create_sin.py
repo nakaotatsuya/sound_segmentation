@@ -14,11 +14,13 @@ import struct
 
 import wave
 
+import random
+
 def create_sin():
     amp = 1
     fs = 16000
-    f0 = 2000
-    sec = 3
+    f0 = 2500 + np.random.randint(-20, 20)
+    sec = 1.6
 
     point = np.arange(0, fs*sec)
     sin_wave = amp * np.sin(2*np.pi*f0*point/fs)
@@ -38,8 +40,8 @@ def create_sin():
     print(sin_wave.shape)
     binwave = struct.pack("h" * len(sin_wave), *sin_wave)
 
-    for i in [1,3,5]:
-        sin_wave[i* 10000 : i * 10000 + 10000] = 0
+    for i in [0,1,2,3]:
+        sin_wave[i* 18000 : (i+1) * 18000 - 8000] = 0
     #print(len(binwave))
     #print(binwave[0])
     #binwave = np.array(binwave)

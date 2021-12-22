@@ -22,8 +22,8 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     class_names = os.listdir(wav_file_path)
     chosen_classes = random.sample(class_names, 2)
 
-    #class1_path = osp.join(wav_file_path, chosen_classes[0])
-    class1_path = osp.join(wav_file_path, "sin")
+    class1_path = osp.join(wav_file_path, chosen_classes[0])
+    #class1_path = osp.join(wav_file_path, "sin")
     class2_path = osp.join(wav_file_path, chosen_classes[1])
     
     #choose wav file randomly
@@ -69,11 +69,14 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     y = 6.5
     z = 2.8
     room_dim = [x, y, z]
-    e_absorption, max_order = pra.inverse_sabine(0.5, room_dim)
+    e_absorption, _ = pra.inverse_sabine(0.5, room_dim)
     #print(e_absorption, max_order)
-
+    e_absorption += np.random.uniform(-0.1, 0.1)
+    max_order = np.random.randint(5, 30)
+    
+    print(e_absorption, max_order)
     room = pra.ShoeBox(
-        room_dim, fs=16000, materials=pra.Material(e_absorption), max_order=20)
+        room_dim, fs=16000, materials=pra.Material(e_absorption), max_order=max_order)
 
     #set the mic arrays.
     mic_x = random.uniform(1 , x-1)
@@ -109,7 +112,7 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     #sep or not sep (for train, not sep  : for val, sep)
     if not sep:
         room.add_source([mic_x + np.cos(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), mic_y + np.sin(chosen_theta[0]) * np.cos(chosen_ele_theta[0]), 0.91 + np.sin(chosen_ele_theta[0])], signal=wav_data.data.T[0])
-        #room.add_source([mic_x + np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), mic_y + np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 0.91 + np.sin(chosen_ele_theta[1])], signal=wav_data2.data.T[0])
+        room.add_source([mic_x + np.cos(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), mic_y + np.sin(chosen_theta[1]) * np.cos(chosen_ele_theta[1]), 0.91 + np.sin(chosen_ele_theta[1])], signal=wav_data2.data.T[0])
     else:
         radius = 1
         radius2 = 1
@@ -158,8 +161,8 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     
     #save files
     #train dir
-    train_path = osp.join(file_path, "train")
-    val_path = osp.join(file_path, "val")
+    train_path = osp.join(file_path, "noise_train2")
+    val_path = osp.join(file_path, "noise_val2")
     visualize_path = osp.join(file_path, "visualize")
 
     #train or val
@@ -227,14 +230,14 @@ if __name__ == "__main__":
     # for i in range(1):
     #     create_mixed_file(data="sep_esc50", sr=44100, val=True, sep=True)
 
-    # for i in range(30000):
-    #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=False)
+    # for i in range(12000):
+    #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
 
-    # for i in range(1000):
-    #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=False, noise_flag=False)
-    # for i in range(1000):
-    #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=True, noise_flag=False)
+    for i in range(1703):
+        create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=False, noise_flag=True)
+    #for i in range(1000):
+    #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=True, noise_flag=True)
 
-    for i in range(1):
-        create_mixed_file(data="house_audios", sr=16000, train_type="visualize", sep=False, noise_flag=True)
+    #for i in range(30000):
+    #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
     #create_mixed_file(data="audios", sr=16000, val=True)

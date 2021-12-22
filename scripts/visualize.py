@@ -18,24 +18,26 @@ from PIL import Image as _Image
 rospack = rospkg.RosPack()
 file_path = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
 #wav_file_path = osp.join(file_path, "val", "00009")
-wav_file_path = osp.join(file_path, "visualize", "wo_real")
+#wav_file_path = osp.join(file_path, "noise_train2", "00003")
 
-filelist = os.listdir(wav_file_path)
+wav_file_path = osp.join(file_path, "noise_processed_train")
+nums = os.listdir(wav_file_path)
+nums.sort(key=int)
 
 ## sound (time and amp)
-for filename in filelist:
-    if filename[-4:] == ".wav":
-        if "_" in filename:
-            waveform, fs = sf.read(osp.join(wav_file_path, filename))
+# for filename in filelist:
+#     if filename[-4:] == ".wav":
+#         if "_" in filename:
+#             waveform, fs = sf.read(osp.join(wav_file_path, filename))
 
-            x = np.arange(waveform.shape[0])
-            #print(waveform.shape)
-            x = x*1.0 / fs
-            print(x)
+#             x = np.arange(waveform.shape[0])
+#             #print(waveform.shape)
+#             x = x*1.0 / fs
+#             print(x)
 
-plt.figure(figsize=(15,3))
-plt.plot(x, waveform.T[0])
-plt.show()
+# plt.figure(figsize=(15,3))
+# plt.plot(x, waveform.T[0])
+# plt.show()
 
 ## spectrogram and phase
 duration = 96 #512 or 96
@@ -49,15 +51,21 @@ def normalize(mixture):
     mixture[0] = 20*np.log10(mixture[0])
     mixture[0] = np.nan_to_num(mixture[0])
     mixture[0] = (mixture[0] + 120) / 120
-                            
-for filename in filelist:
-    if filename[-4:] == ".wav":
-        if "_" in filename:
-            waveform, fs = sf.read(osp.join(wav_file_path, filename))
+
+for num in nums:
+    print(num)
+    wav_file_num_path = osp.join(wav_file_path, num)
+    filelist = os.listdir(wav_file_num_path)
+    
+    for filename in filelist:
+        if filename[-4:] == ".wav":
+            #if "_" in filename:
+            waveform, fs = sf.read(osp.join(wav_file_num_path, filename))
             _, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
             #stft = stft[:, :, 1:len(stft.T)-1]
 
-            stft = stft[:,:,:96]
+            print(stft.shape)
+            stft = stft[:,:,:duration]
             print(stft.shape)
             mixture_phase = np.angle(stft[0])
             for nchan in range(16):
@@ -68,38 +76,32 @@ for filename in filelist:
                     mixture[nchan*2] = np.sin(np.angle(stft[0][:256]) - np.angle(stft[nchan][:256]))
             normalize(mixture)
 
-for i in range(input_dim):
-    fig, ax = plt.subplots(figsize=(5,5))
-    ax.pcolormesh(mixture[i])
-    #plt.show()
-    fig.savefig(osp.join(wav_file_path, "file_{}.jpg".format(i)))
+            fig, ax = plt.subplots(figsize=(5,5))
+            ax.pcolormesh(mixture[0])
+            fig.savefig(osp.join(wav_file_num_path, "{}.jpg".format(filename[:-4])))
 
+# for i in range(input_dim):
+#     fig, ax = plt.subplots(figsize=(5,5))
+#     ax.pcolormesh(mixture[i])
+#     #print(mixture[i].shape)
+#     #plt.show()
+#     fig.savefig(osp.join(wav_file_path, "file_{}.jpg".format(i)))
 
 # plt.pcolormesh(mixture[1])
 # plt.show()
-
-# plt.pcolormesh(mixture[2])
-# plt.show()
-
-# plt.pcolormesh(mixture[15])
-# plt.show()
-
-# plt.pcolormesh(mixture[16])
-# plt.show()
-
 #plt.pcolormesh(mixture_phase)
 #plt.show()
 
-for filename in filelist:
-    if filename[-4:] == ".wav":
-        if not "_" in filename:
-            waveform, fs = sf.read(osp.join(wav_file_path, filename))
+# for filename in filelist:
+#     if filename[-4:] == ".wav":
+#         if not "_" in filename:
+#             waveform, fs = sf.read(osp.join(wav_file_path, filename))
 
-            x = np.arange(waveform.shape[0])
-            #print(waveform.shape)
-            x = x*1.0 / fs
-            print(x)
+#             x = np.arange(waveform.shape[0])
+#             #print(waveform.shape)
+#             x = x*1.0 / fs
+#             print(x)
             
-            plt.figure(figsize=(15,3))
-            plt.plot(x, waveform)
-            #plt.show()
+#             plt.figure(figsize=(15,3))
+#             plt.plot(x, waveform)
+#             #plt.show()

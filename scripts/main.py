@@ -164,6 +164,8 @@ def val():
                 gts = np.concatenate((gts, gt), axis=0)
             break
 
+            break
+
     #print(gts[3][18:24])
     #print(preds[3][18:24])
 
