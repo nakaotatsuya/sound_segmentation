@@ -14,7 +14,7 @@ from torch.utils import data
 import  os.path as osp
 from torch.utils.data import DataLoader
 
-class SoundSegmentationDataset(data.Dataset):
+class SoundSegmentationDataset_2D(data.Dataset):
     def __init__(self, root, split="train", task="ssls", n_classes=1, spatial_type=None, mic_num=8, angular_resolution=8, input_dim=15):
         self.split = split
         self.task = task
@@ -155,18 +155,18 @@ class SoundSegmentationDataset(data.Dataset):
 
         return mixture, label
 
-if __name__ == "__main__":
-    import rospkg
-    import sys
-    rospack = rospkg.RosPack()
-    root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
+# if __name__ == "__main__":
+#     import rospkg
+#     import sys
+#     rospack = rospkg.RosPack()
+#     root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
     
-    ssd = SoundSegmentationDataset(root, split="val", spatial_type="ipd")
+#     ssd = SoundSegmentationDataset(root, split="val", spatial_type="ipd")
 
-    loader = DataLoader(ssd, batch_size=1)
-    for i, (images, labels, phase) in enumerate(loader):
-        print(images.shape)
-        print(labels.shape)
-        print(phase.shape)
-        sys.exit()
-    #print(len(ssd))
+#     loader = DataLoader(ssd, batch_size=1)
+#     for i, (images, labels, phase) in enumerate(loader):
+#         print(images.shape)
+#         print(labels.shape)
+#         print(phase.shape)
+#         sys.exit()
+#     #print(len(ssd))
