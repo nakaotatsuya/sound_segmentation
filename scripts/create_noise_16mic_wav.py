@@ -176,10 +176,11 @@ class Create16Wave():
         
         #wave = self.hpf(self.combined_audios_buffer, self.mic_sampling_rate, self.low_cut_freq, 5)
         print(self.combined_audios_buffer.shape)
-        wave = self.highpass(self.combined_audios_buffer, self.mic_sampling_rate, 2000, 500, 3, 30)
-        wave = self.lowpass(wave, self.mic_sampling_rate, 3000, 6000, 3, 40)
+        #wave = self.highpass(self.combined_audios_buffer, self.mic_sampling_rate, 2000, 500, 3, 30)
+        #wave = self.lowpass(wave, self.mic_sampling_rate, 3000, 6000, 3, 40)
         #wave = self.combined_audios_buffer
-        print(wave.T[0].shape)
+        #print(wave.T[0].shape)
+        wave = self.combined_audios_buffer
 
         if not self.in_sound:
             #if False:
@@ -189,7 +190,7 @@ class Create16Wave():
                 listdir(self.target_dir)) + 1
             wav_file_name = osp.join(
                 self.target_dir, "{}_{:0=5d}.wav".format(self.target_class, file_num))
-            wavio.write(wav_file_name, wave, self.mic_sampling_rate, sampwidth=3)
+            wavio.write(wav_file_name, wave, self.mic_sampling_rate, sampwidth=2)
 
             wav_mono_file_name = osp.join(
                 self.target_dir, "{}_{:0=5d}_mono.wav".format(self.target_class, file_num))
@@ -197,7 +198,7 @@ class Create16Wave():
 
             wav_raw_file_name = osp.join(
                 self.target_dir, "{}_{:0=5d}_raw.wav".format(self.target_class, file_num))
-            wavio.write(wav_raw_file_name, self.combined_audios_buffer, self.mic_sampling_rate, sampwidth=3)
+            #wavio.write(wav_raw_file_name, self.combined_audios_buffer, self.mic_sampling_rate, sampwidth=3)
             rospy.loginfo("save wav file:" + wav_file_name)
 
 if __name__ == "__main__":

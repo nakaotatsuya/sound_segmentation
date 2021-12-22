@@ -1,0 +1,49 @@
+<launch>
+  <arg name="n_channel" default="8" />
+  <arg name="mic_sampling_rate" default="16000" />
+  <arg name="bitdepth" default="16" />
+
+  <arg name="save_data_rate" default="5" />
+  <arg name="save_when_sound" default="true" />
+  <arg name="target_class" default="" />
+
+  <arg name="high_cut_freq" default="6000" />
+  <arg name="low_cut_freq" default="2000" />
+
+  <arg name="audio_topic" default="/tamago1/audio" />
+  <arg name="audio_topic2" default="/tamago2/audio" />
+
+  <include file="$(find sound_classification)/launch/detect_sound.launch" >
+    <arg name="n_channel" value="$(arg n_channel)" />
+    <arg name="bitdepth" value="$(arg bitdepth)" />
+    <arg name="mic_sampling_rate" value="$(arg mic_sampling_rate)" />
+    <arg name="threshold" value="0.5" />
+    <arg name="audio_topic" value="$(arg audio_topic)" />
+    <arg name="train_data" value="aaaaa" />
+    <arg name="spectrogram_period" value="0.5" />
+  </include>
+
+  <node name="headered_audio" pkg="sound_segmentation" type="headered_audio.py" output="screen">
+    <remap from="~audio" to="$(arg audio_topic)" />
+  </node>
+  
+  <node name="headered_audio2" pkg="sound_segmentation" type="headered_audio.py" output="screen">
+    <remap from="~audio" to="$(arg audio_topic2)" />
+  </node>
+  
+  <node name="create_16mic_wav" pkg="sound_segmentation" type="create_noise_16mic_wav.py" output="screen">
+    <remap from="~in_sound" to="/sound_detector_volume/in_sound" />
+    <remap from="~audio1" to="/headered_audio/output" />
+    <remap from="~audio2" to="/headered_audio2/output"/>
+    <rosparam subst_value="true">
+      n_channel: $(arg n_channel)
+      mic_sampling_rate: $(arg mic_sampling_rate)
+      bitdepth: $(arg bitdepth)
+      save_data_rate: $(arg save_data_rate)
+      save_when_sound: $(arg save_when_sound)
+      target_class: $(arg target_class)
+      high_cut_freq: $(arg high_cut_freq)
+      low_cut_freq: $(arg low_cut_freq)
+    </rosparam>
+  </node>
+</launch>
