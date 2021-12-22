@@ -69,11 +69,14 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     y = 6.5
     z = 2.8
     room_dim = [x, y, z]
-    e_absorption, max_order = pra.inverse_sabine(0.5, room_dim)
+    e_absorption, _ = pra.inverse_sabine(0.5, room_dim)
     #print(e_absorption, max_order)
-
+    e_absorption += np.random.uniform(-0.1, 0.1)
+    max_order = np.random.randint(5, 30)
+    
+    print(e_absorption, max_order)
     room = pra.ShoeBox(
-        room_dim, fs=16000, materials=pra.Material(e_absorption), max_order=20)
+        room_dim, fs=16000, materials=pra.Material(e_absorption), max_order=max_order)
 
     #set the mic arrays.
     mic_x = random.uniform(1 , x-1)
@@ -158,8 +161,8 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     
     #save files
     #train dir
-    train_path = osp.join(file_path, "noise_train")
-    val_path = osp.join(file_path, "val")
+    train_path = osp.join(file_path, "noise_train2")
+    val_path = osp.join(file_path, "noise_val2")
     visualize_path = osp.join(file_path, "visualize")
 
     #train or val
@@ -227,14 +230,14 @@ if __name__ == "__main__":
     # for i in range(1):
     #     create_mixed_file(data="sep_esc50", sr=44100, val=True, sep=True)
 
-    # for i in range(30000):
-    #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=False)
+    # for i in range(12000):
+    #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
 
-    # for i in range(1000):
-    #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=False, noise_flag=False)
-    # for i in range(1000):
-    #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=True, noise_flag=False)
+    for i in range(1703):
+        create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=False, noise_flag=True)
+    #for i in range(1000):
+    #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=True, noise_flag=True)
 
-    for i in range(1):
-        create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
+    #for i in range(30000):
+    #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
     #create_mixed_file(data="audios", sr=16000, val=True)

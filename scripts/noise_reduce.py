@@ -13,6 +13,37 @@ import scipy
 
 import matplotlib.pyplot as plt
 
+from os import makedirs, listdir
+import rospkg
+
+from scipy import signal
+import cmath
+import soundfile as sf
+
+import shutil
+
+def lowpass(x, samplerate, fp, fs, gpass, gstop):
+    fn = samplerate / 2.0
+    wp = 1.0 * fp / fn
+    ws = 1.0 * fs / fn
+    N, Wn = signal.buttord(wp, ws, gpass, gstop)
+    b, a = signal.butter(N, Wn, "low")
+    y = signal.filtfilt(b, a, x)
+    return y
+
+def highpass(x, samplerate, fp, fs, gpass, gstop):
+    fn = samplerate / 2.0
+    wp = 1.0 * fp / fn
+    ws = 1.0 * fs / fn
+    #print(wp)
+    #print(ws)
+    N, Wn = signal.buttord(wp, ws, gpass, gstop)
+    #print(Wn)
+    b, a = signal.butter(N, Wn, "high")
+    #print(b)
+    y = signal.filtfilt(b, a, x)
+    return y
+
 def envelope(y, rate, threshold):
     #print(y[0:10])
     #y_mean = maximum_filter1d(np.abs(y), mode="constant", size=rate//20)
@@ -42,7 +73,7 @@ def reduce_noise(waveform, fs):
     n_std_thresh = 1.5
 
     #print(waveform)
-    mask, y_mean = envelope(waveform, rate=fs, threshold=0.4)
+    mask, y_mean = envelope(waveform, rate=fs, threshold=0.2)
     #print(mask)
     #print(y_mean.shape)
     #print(y_mean)
@@ -113,15 +144,16 @@ def reduce_noise(waveform, fs):
         sig_stft_amp = (_db_to_amp(sig_stft_db_masked) * np.sign(sig_stft)) + (1j * sig_imag_masked)
 
         recovered_signal = _istft(sig_stft_amp, hop_length, win_length)
-        print(recovered_signal.shape)
+        #print(recovered_signal.shape)
 
         if i==0:
             recovered_signals = recovered_signal
         else:
             recovered_signals = np.vstack((recovered_signals, recovered_signal))
-            print(recovered_signals.shape)
+            #print(recovered_signals.shape)
 
-    wavio.write(osp.join(wav_file, "removed_noise.wav"), recovered_signals.T, 16000, sampwidth=3)
+    return recovered_signals
+
     
 if __name__ == "__main__":
     rospack = rospkg.RosPack()
@@ -130,22 +162,34 @@ if __name__ == "__main__":
     # wav_file = osp.join(wav_file_path, "wav", "sin")
     # waveform, fs = sf.read(osp.join(wav_file, "sin_00060.wav"))
 
-    wav_file_path = osp.join(rospack.get_path(
+    root_path = osp.join(rospack.get_path(
         "sound_segmentation"), "house_audios")
-    wav_file_path = osp.join(wav_file_path, "noise_train", "00001")
+    #num = "00004"
 
-    filelist = os.listdir(wav_file_path)
-    print(filelist)
-    #wav_file = osp.join(wav_file_path, "noise_train", "00001")
-    for filename in filelist:
-        print("a")
-        if filename[-4:] == ".wav":
-            if "_" in filename:
-                print("b")
-                waveform, fs = sf.read(osp.join(wav_file_path, filename))
-                print(waveform.shape)
+    wav_file_path = osp.join(root_path, "noise_val2")
+    nums = os.listdir(wav_file_path)
+    nums.sort(key=int)
 
-    reduce_noise(waveform, fs)
+    #nums = nums[17880:]
+    for num in nums:
+        print(num)
+        wav_file_num_path = osp.join(wav_file_path, num)
+        filelist = os.listdir(wav_file_num_path)
+        print(filelist)
+        save_path = osp.join(root_path, "noise_processed_val", num)
+        if not osp.exists(save_path):
+            os.makedirs(save_path)
+            
+        for filename in filelist:
+            if (filename[-4:] == ".wav") and ("_" in filename):
+                #shutil.copy(osp.join(wav_file_num_path, filename), save_path)
+                waveform, fs = sf.read(osp.join(wav_file_num_path, filename))
+                #wave = highpass(waveform, fs, 2000, 500, 3, 30)
+        recovered_signals = reduce_noise(waveform, fs)
+        #recovered_signals_with_high = reduce_noise(wave, fs)
 
-    #_, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
+        #wavio.write(osp.join(save_path, "highpass_and_ss.wav"), recovered_signals_with_high.T, 16000, sampwidth=3)
+        wavio.write(osp.join(save_path, "ss.wav"), recovered_signals.T, 16000, sampwidth=3)
+        #wavio.write(osp.join(save_path, "highpass.wav"), wave, 16000, sampwidth=3)
+
 
