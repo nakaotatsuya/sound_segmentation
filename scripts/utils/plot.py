@@ -112,6 +112,17 @@ def plot_mixture_stft(X, no, save_dir, pred):
 
     plt.imsave(os.path.join(pred_dir, "aa_mixture.png"), X[no][0][::-1])
 
+def plot_input(X, no, save_dir, pred):
+    pred_dir = _pred_dir_make(no, save_dir, pred)
+    freq = np.linspace(0, 8000, 256)
+    time = np.linspace(0, 1.5, 96)
+    plt.pcolormesh(time, freq, X[no][0])
+    plt.xlabel("time")
+    plt.ylabel("frequency")
+    plt.clim(0,1)
+    plt.colorbar()
+    plt.savefig(pred_dir + "/mixture.jpg")
+    plt.close()
 
 def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
     print(Y_true.shape)
