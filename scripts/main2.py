@@ -16,7 +16,7 @@ from torch.backends import cudnn
 
 #from model import read_model, FCN8s, UNet, CRNN, Deeplabv3plus
 from models import read_model, UNet, Deeplabv3plus
-from data import SoundSegmentationDataset
+from data import SoundSegmentationDataset2
 from utils import scores, rmse, save_score_array
 from utils import plot_loss, plot_mixture_stft, plot_event, plot_class_stft
 from utils import restore
@@ -34,11 +34,11 @@ import soundfile as sf
 import wavio
 
 def train():
-    train_dataset = SoundSegmentationDataset(dataset_dir, split="noise_train2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    train_dataset = SoundSegmentationDataset2(dataset_dir, split="noise_train2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=16, shuffle=True, pin_memory=True)
 
-    val_dataset = SoundSegmentationDataset(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_dataset = SoundSegmentationDataset2(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=16, shuffle=False, pin_memory=True)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -133,7 +133,7 @@ def train():
         #    shutil.copy("nohup.out", save_dir)
 
 def val():
-    val_dataset = SoundSegmentationDataset(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_dataset = SoundSegmentationDataset2(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
 
     model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
@@ -203,7 +203,7 @@ def val():
     #         sys.exit()
 
 def real_val():
-    val_dataset = SoundSegmentationDataset(dataset_dir, split="real_val", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_dataset = SoundSegmentationDataset2(dataset_dir, split="real_val", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
 
     model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
@@ -278,7 +278,7 @@ if __name__ == "__main__":
     #save_dir = osp.join("results", dataset_name, "2021_1203_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1205_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1212_supervised_ssls_UNet")
-    save_dir = osp.join("results", dataset_name, "2021_1218_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1218_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -290,6 +290,6 @@ if __name__ == "__main__":
     else:
         raise ValueError("mic num should be 8")
 
-    #train()
-    val()
+    train()
+    #val()
     #real_val()

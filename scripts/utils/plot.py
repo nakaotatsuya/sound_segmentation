@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+from PIL import Image
 
 def _pred_dir_make(no, save_dir, pred="prediction"):
     pred_dir = os.path.join(save_dir, pred, str(no))
@@ -109,6 +110,8 @@ def plot_mixture_stft(X, no, save_dir, pred):
     plt.savefig(pred_dir + "/mixture.png")
     plt.close()
 
+    plt.imsave(os.path.join(pred_dir, "aa_mixture.png"), X[no][0][::-1])
+
 
 def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
     print(Y_true.shape)
@@ -122,61 +125,39 @@ def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
     pred_dir = _pred_dir_make(no, save_dir, pred)
         
     Y_true_total = np.zeros(Y_true[0][0].shape)
+    print(Y_true_total.shape)
     Y_pred_total = np.zeros(Y_pred[0][0].shape)
 
     freq = np.linspace(0, 22050, 256)
     time = np.linspace(0, 5, 96)
     print(freq.shape)
     for i in range(plot_num):
-        if Y_true[no][i].max() >= 0:
-            #print(Y_true[no][i].shape)
-            plt.pcolormesh(time, freq, (Y_true[no][i]))
+        if Y_true[no][i].max() > 0:
+            
+            print(Y_true[no][i].shape)
+            
             ele = i // 8
             azi = i % 8
-            if ang_reso == 1:
-                #plt.title(label.index[i] + "_truth")
-                plt.title(str(i) + "_truth")
-            else:
-                #plt.title(label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_truth")
-                #plt.title(str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_truth")
-                plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
+
+            plt.pcolormesh(time, freq, (Y_true[no][i]))
+            plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
             plt.xlabel("time")
             plt.ylabel(ylabel)
             plt.clim(0, 1)
             plt.colorbar()
-            if ang_reso == 1:
-                #plt.savefig(pred_dir + "/" + label.index[i] + "_true.png")
-                plt.savefig(pred_dir + "/" + str(i) + "_true.png")
-            else:
-                #plt.savefig(pred_dir + "/" + label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_true.png")
-                #plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_true.png")
-                #ele = i // 8
-                #azi = i % 8
-                plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
+            plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
             plt.close()
 
             plt.pcolormesh(time, freq, (Y_pred[no][i]))
-            if ang_reso == 1:
-                #plt.title(label.index[i] + "_prediction")
-                plt.title(str(i) + "_prediction")
-            else:
-                #plt.title(label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_prediction")
-                #plt.title(str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_prediction")
-                plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")
+            plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")
             plt.xlabel("time")
             plt.ylabel(ylabel)
             plt.clim(0, 1)
             plt.colorbar()
-            if ang_reso == 1:
-                #plt.savefig(pred_dir + "/" + label.index[i] + "_pred.png")
-                plt.savefig(pred_dir + "/" + str(i) + "_pred.png")
-            else:
-                #plt.savefig(pred_dir + "/" + label.index[i // ang_reso] + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_pred.png")
-                #plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // ang_reso) * (i % ang_reso)) + "deg_pred.png")
-                #ele = i // 8
-                #azi = i % 8
-                plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")
+            plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")
             plt.close()
+
+            #plt.imsave(os.path.join(pred_dir, "aa" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png"), Y_pred[no][i][::-1])
             
         #Y_true_total += (Y_true[no][i] > 0.45) * (i + 4)
         #Y_pred_total += (Y_pred[no][i] > 0.45) * (i + 4)

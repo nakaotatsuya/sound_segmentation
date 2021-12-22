@@ -15,7 +15,7 @@ from torch.utils import data
 import  os.path as osp
 from torch.utils.data import DataLoader
 
-class SoundSegmentationDataset(data.Dataset):
+class SoundSegmentationDataset2(data.Dataset):
     def __init__(self, root, split="train", task="ssls", n_classes=1, spatial_type=None, mic_num=16, angular_resolution=40, input_dim=31):
         self.split = split
         self.task = task
@@ -92,14 +92,14 @@ class SoundSegmentationDataset(data.Dataset):
         direction_index = 0
         filelist = os.listdir(self.data_pair_folders[index])
         for filename in filelist:
-            if filename[-4:] == ".wav" and (filename != "ss.wav") and (filename != "noisereduce.wav"):
+            if filename[-4:] == ".wav" and (not "_" in filename) and (filename != "ss.wav"):
                 waveform, fs = sf.read(osp.join(self.data_pair_folders[index], filename))
                 #print(waveform.shape) #24000
                 #print(fs) #16000
                 freq, t, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
                 #print(freq)
                 #print(t)
-                if filename == "ss.wav":
+                if filename == "noisereduce.wav":
                     if self.mic_num == 8 * 2:
                         #stft = stft[:, :, 1:len(stft.T) - 1]
                         #prepare 96
