@@ -131,10 +131,15 @@ plt.ylabel('level[dB]')
 plt.legend()
 plt.show()
 
-plt.plot(h_pink)
+time = np.linspace(0, 1.024, h_pink.shape[0])
+plt.plot(time, h_pink)
 plt.title("Inpulse Response(with Pink TSP)")
-plt.xlim(0, 20000)
+#plt.xlim(0, 20000)
+plt.xlabel("Amplitude")
+plt.ylabel("Time [s]")
 plt.show()
+
+print(h_pink.shape)
 
 fs = 16000
 
@@ -169,7 +174,10 @@ curve_offset = max(curve_dB)
 decay_curve = curve_dB - curve_offset
 
 print(decay_curve.shape)
-plt.plot(decay_curve)
+plt.plot(time, decay_curve)
+plt.ylabel("dB [dB]")
+plt.xlabel("Time[s]")
+plt.xlim(0, 1)
 plt.show()
 # find regression target
 i = 0
