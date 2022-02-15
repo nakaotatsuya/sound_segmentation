@@ -123,29 +123,29 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     random_noise_num = random.randint(1,4)
     noise_path = osp.join(file_path, "noise")
 
-    for i in range(random_noise_num):
-        noise_file = random.choice(os.listdir(noise_path))
-        #noise_file = "EWYlONtV2Tk_0.wav"
-        noise_file = osp.join(noise_path, noise_file)
-        print(noise_file)
+    if noise_flag:
+        for i in range(random_noise_num):
+            noise_file = random.choice(os.listdir(noise_path))
+            #noise_file = "EWYlONtV2Tk_0.wav"
+            noise_file = osp.join(noise_path, noise_file)
+            print(noise_file)
 
-        noise = wavio.read(noise_file)
-        #print(noise.data)
+            noise = wavio.read(noise_file)
+            #print(noise.data)
 
-        chosen_x = random.uniform(0, x)
-        chosen_y = random.uniform(0, y)
-        chosen_z = random.uniform(0, z)
-        print(chosen_x, chosen_y, chosen_z)
+            chosen_x = random.uniform(0, x)
+            chosen_y = random.uniform(0, y)
+            chosen_z = random.uniform(0, z)
+            print(chosen_x, chosen_y, chosen_z)
 
-        noise_wave = noise.data.T[0].copy()
-        #print(noise_wave.shape)
-        noise_wave = noise_wave[:wav_data.data.shape[0]]
-        print(noise_wave.shape)
-        #print(noise_wave)
-        if not noise_wave.shape[0]:
-            continue
+            noise_wave = noise.data.T[0].copy()
+            #print(noise_wave.shape)
+            noise_wave = noise_wave[:wav_data.data.shape[0]]
+            print(noise_wave.shape)
+            #print(noise_wave)
+            if not noise_wave.shape[0]:
+                continue
 
-        if noise_flag:
             print("aaaa")
             room.add_source([chosen_x, chosen_y, chosen_z], signal=noise_wave)
     
@@ -161,8 +161,8 @@ def create_mixed_file(data="audios", sr=16000, train_type="train", sep=True, noi
     
     #save files
     #train dir
-    train_path = osp.join(file_path, "noise_train2")
-    val_path = osp.join(file_path, "noise_val2")
+    train_path = osp.join(file_path, "without_noise_train2")
+    val_path = osp.join(file_path, "without_noise_val2")
     visualize_path = osp.join(file_path, "visualize")
 
     #train or val
@@ -233,8 +233,8 @@ if __name__ == "__main__":
     # for i in range(12000):
     #    create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=True)
 
-    for i in range(1703):
-        create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=False, noise_flag=True)
+    for i in range(10000):
+        create_mixed_file(data="house_audios", sr=16000, train_type="train", sep=False, noise_flag=False)
     #for i in range(1000):
     #    create_mixed_file(data="house_audios", sr=16000, train_type="val", sep=True, noise_flag=True)
 

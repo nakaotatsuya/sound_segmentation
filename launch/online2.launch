@@ -3,7 +3,7 @@
   <arg name="mic_sampling_rate" default="16000" />
   <arg name="bitdepth" default="16" />
 
-  <arg name="save_data_rate" default="5" />
+  <arg name="save_data_rate" default="20" />
   <arg name="save_when_sound" default="true" />
   <arg name="target_class" default="" />
 
@@ -34,7 +34,7 @@
     <remap from="~audio" to="$(arg audio_topic2)" />
   </node>
   
-  <node name="online" pkg="sound_segmentation" type="online.py" output="screen">
+  <node name="online" pkg="sound_segmentation" type="online2.py" output="screen">
     <remap from="~in_sound" to="/sound_detector_volume/in_sound" />
     <remap from="~audio1" to="/headered_audio/output" />
     <remap from="~audio2" to="/headered_audio2/output"/>
@@ -50,19 +50,30 @@
     </rosparam>
   </node>
 
-  <!-- <node pkg="image_view" type="image_view" name="stft_spectrogram" > -->
-  <!--   <remap from="image" to="/online/output" /> -->
-  <!--   <rosparam> -->
-  <!--       do_dynamic_scaling: true -->
-        <!-- colormap: 2 -->
-  <!--   </rosparam> -->
-  <!-- </node> -->
-
-  <node pkg="image_view" type="image_view" name="pred_spectrogram" >
-    <remap from="image" to="/online/output_pred" />
+  <node pkg="image_view2" type="image_view2" name="stft_spectrogram" >
+    <remap from="image" to="/online/output" />
     <rosparam>
         do_dynamic_scaling: true
-        <!-- colormap: 2 -->
+        colormap: 2
+        use_window: false
+    </rosparam>
+  </node>
+
+  <node pkg="image_view2" type="image_view2" name="pred_spectrogram0" >
+    <remap from="image" to="/online/output_pred0" />
+    <rosparam>
+        do_dynamic_scaling: true
+        colormap: 2
+        use_window: false
+    </rosparam>
+  </node>
+
+  <node pkg="image_view2" type="image_view2" name="pred_spectrogram1" >
+    <remap from="image" to="/online/output_pred1" />
+    <rosparam>
+        do_dynamic_scaling: true
+        colormap: 2
+        use_window: false
     </rosparam>
   </node>
 

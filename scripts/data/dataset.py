@@ -81,11 +81,13 @@ class SoundSegmentationDataset_2D(data.Dataset):
         for filename in filelist:
             if filename[-4:] == ".wav" and (filename != "ss.wav") and (filename != "noisereduce.wav"):
                 waveform, fs = sf.read(osp.join(self.data_pair_folders[index], filename))
-                #print(waveform.shape) #24000
                 #print(fs) #16000
+                #print(waveform.T[:8].shape) #24000
                 _, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
                 if "_" in filename:
                     if self.mic_num == 8:
+                        #print(waveform.T[:8].shape)
+                        _, _, stft = signal.stft(x=waveform.T[:8], fs=fs, nperseg=512, return_onesided=False)
                         #stft = stft[:, :, 1:len(stft.T) - 1]
                         #prepare 96
                         #stft = stft[:,:,1:len(stft.T)]
@@ -157,18 +159,18 @@ class SoundSegmentationDataset_2D(data.Dataset):
 
         return mixture, label
 
-# if __name__ == "__main__":
-#     import rospkg
-#     import sys
-#     rospack = rospkg.RosPack()
-#     root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
+if __name__ == "__main__":
+    import rospkg
+    import sys
+    rospack = rospkg.RosPack()
+    root = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
     
-#     ssd = SoundSegmentationDataset(root, split="val", spatial_type="ipd")
+    ssd = SoundSegmentationDataset_2D(root, split="noise_train2", spatial_type="ipd")
 
-#     loader = DataLoader(ssd, batch_size=1)
-#     for i, (images, labels, phase) in enumerate(loader):
-#         print(images.shape)
-#         print(labels.shape)
-#         print(phase.shape)
-#         sys.exit()
-#     #print(len(ssd))
+    loader = DataLoader(ssd, batch_size=1)
+    for i, (images, labels, phase) in enumerate(loader):
+        #print(images.shape)
+        #print(labels.shape)
+        #print(phase.shape)
+        sys.exit()
+    #print(len(ssd))

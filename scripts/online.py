@@ -92,7 +92,7 @@ class Create16Wave():
         sub2 = message_filters.Subscriber("~audio2", AudioHeaderData, queue_size=1000)
         subs = [sub1, sub2]
         #ts = message_filters.TimeSynchronizer(subs, 100000)
-        ts = message_filters.ApproximateTimeSynchronizer(subs, 10000, slop=0.01)
+        ts = message_filters.ApproximateTimeSynchronizer(subs, 1, slop=0.01)
         ts.registerCallback(self.audio_cb)
         # rospy.Subscriber(
         #     "~audio", AudioData, self.audio_cb)
@@ -179,7 +179,6 @@ class Create16Wave():
         stft_spectrogram.header = self.header
         self.pub_spectrogram.publish(stft_spectrogram)
 
-
     def timer_cb(self, timer):
         if len(self.audio_buffer) != self.audio_buffer_len:
             return
@@ -195,10 +194,36 @@ class Create16Wave():
             #estimate
             pred = self.estimate(mixture_torch, labels_torch)
 
-            cv_pred = pred[0][16]
-            print(cv_pred.shape)
-            cv_pred = cv2.resize(
-                cv_pred, (96, 256))
+            max_power_per_pixel = 0
+            cv_pred_list = []
+            ppp_list = []
+            for i in range(self.angular_resolution):
+                cv_pred = pred[0][i][::-1,:]
+                power_per_pixel = cv_pred.sum() / cv_pred.size
+                print(cv_pred.shape)
+                cv_pred = cv2.resize(
+                    cv_pred, (96, 256))
+                cv_pred_list.append(cv_pred)
+                #power_per_pixel = cv_pred.sum() / cv_pred.size
+                ppp_list.append(power_per_pixel)
+
+            print(ppp_list)
+            for i in range(self.angular_resolution):
+                average_ppp = 0
+                if i <= 7 or i >= 32:
+                    pass
+                elif i % 8 == 0:
+                    average_ppp = ppp_list[i-8] + ppp_list[i-7] + ppp_list[i-1] + ppp_list[i] + ppp_list[i+1] + ppp_list[i+7] + ppp_list[i+8] + ppp_list[i+9] + ppp_list[i+15]
+                elif i % 8 == 7:
+                    average_ppp = ppp_list[i+8] + ppp_list[i+7] + ppp_list[i+1] + ppp_list[i] + ppp_list[i-1] + ppp_list[i-7] + ppp_list[i-8] + ppp_list[i-9] + ppp_list[i-15]
+                elif i >= 8 and i <= 31:
+                    average_ppp = ppp_list[i-9] + ppp_list[i-8] + ppp_list[i-7] + ppp_list[i-1] + ppp_list[i] + ppp_list[i+1] + ppp_list[i+7] + ppp_list[i+8] + ppp_list[i+9]
+
+                if average_ppp > max_power_per_pixel:
+                    max_power_per_pixel = average_ppp
+                    max_idx = i
+            print(max_idx)
+            cv_perd = pred[0][max_idx]
             pred_spectrogram = self.bridge.cv2_to_imgmsg(cv_pred, "32FC1")
             self.pub_pred_spectrogram.publish(pred_spectrogram)
 
