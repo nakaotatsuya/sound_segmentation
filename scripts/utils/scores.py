@@ -2,7 +2,9 @@ import numpy as np
 import os
 
 def rmse(Y_true, Y_pred, classes):
-    #print(Y_true.shape)
+    print(Y_true.shape)
+    ang_reso = 40
+    classes *= classes * ang_reso
     Y_pred_db = (Y_pred * 120) # 0~120dB
     Y_true_db = (Y_true * 120)
     

@@ -100,8 +100,8 @@ def plot_event(Y_true, Y_pred, no, save_dir, classes, ang_reso, label):
 def plot_mixture_stft(X, no, save_dir, pred):
     pred_dir = _pred_dir_make(no, save_dir, pred)
 
-    freq = np.linspace(0, 22050, 256)
-    time = np.linspace(0, 5, 96)
+    freq = np.linspace(0, 8000, 256)
+    time = np.linspace(0, 1.5, 96)
     plt.pcolormesh(time, freq,(X[no][0]))
     plt.xlabel("time")
     plt.ylabel('frequency')
@@ -110,7 +110,7 @@ def plot_mixture_stft(X, no, save_dir, pred):
     plt.savefig(pred_dir + "/mixture.png")
     plt.close()
 
-    plt.imsave(os.path.join(pred_dir, "aa_mixture.png"), X[no][0][::-1])
+    #plt.imsave(os.path.join(pred_dir, "aa_mixture.png"), X[no][0][::-1])
 
 def plot_input(X, no, save_dir, pred):
     pred_dir = _pred_dir_make(no, save_dir, pred)
@@ -124,6 +124,32 @@ def plot_input(X, no, save_dir, pred):
     plt.savefig(pred_dir + "/mixture.jpg")
     plt.close()
 
+def plot_save(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
+    plot_num = classes * ang_reso
+    ylabel = "frequency"
+    pred_dir = _pred_dir_make(no, save_dir, pred)
+
+    Y_true_total = np.zeros(Y_true[0][0].shape)
+    Y_pred_total = np.zeros(Y_pred[0][0].shape)
+
+    freq = np.linspace(0, 8000, 256)
+    time = np.linspace(0, 1.5, 96)
+
+    for i in range(plot_num):
+        if Y_true[no][i].max() >= 0:
+            ele = i // 8
+            azi =i % 8
+
+            pred_file_name = pred_dir + "/cv_" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png"
+            cv_pred = Y_pred[no][i][::-1,:]
+            cv_pred = (cv_pred * 255).astype(np.uint8)
+            Image.fromarray(cv_pred).save(pred_file_name)
+
+            true_file_name = pred_dir + "/cv_" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png"
+            cv_true = Y_true[no][i][::-1,:]
+            cv_true = (cv_true * 255).astype(np.uint8)
+            Image.fromarray(cv_true).save(true_file_name)
+            
 def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
     print(Y_true.shape)
     plot_num = classes * ang_reso
@@ -139,25 +165,25 @@ def plot_class_stft(Y_true, Y_pred, no, save_dir, classes, ang_reso, pred):
     print(Y_true_total.shape)
     Y_pred_total = np.zeros(Y_pred[0][0].shape)
 
-    freq = np.linspace(0, 22050, 256)
-    time = np.linspace(0, 5, 96)
+    freq = np.linspace(0, 8000, 256)
+    time = np.linspace(0, 1.5, 96)
     print(freq.shape)
     for i in range(plot_num):
-        if Y_true[no][i].max() > 0:
+        if Y_true[no][i].max() >= 0:
             
             print(Y_true[no][i].shape)
             
             ele = i // 8
             azi = i % 8
 
-            plt.pcolormesh(time, freq, (Y_true[no][i]))
-            plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
-            plt.xlabel("time")
-            plt.ylabel(ylabel)
-            plt.clim(0, 1)
-            plt.colorbar()
-            plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
-            plt.close()
+            # plt.pcolormesh(time, freq, (Y_true[no][i]))
+            # plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
+            # plt.xlabel("time")
+            # plt.ylabel(ylabel)
+            # plt.clim(0, 1)
+            # plt.colorbar()
+            # plt.savefig(pred_dir + "/" + str(i // ang_reso) + "_" + str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_true.png")
+            # plt.close()
 
             plt.pcolormesh(time, freq, (Y_pred[no][i]))
             plt.title(str((360 // 8) * (azi % 8)) + "deg_" + str(ele * 30 - 60) + "deg_pred.png")

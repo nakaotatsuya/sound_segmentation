@@ -134,11 +134,16 @@ def train():
 
 def val():
     val_dataset = SoundSegmentationDataset(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=16, shuffle=False)
 
+    device = "cuda"
     model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
     model.load(osp.join(save_dir, model_name + ".pth"))
     model.cuda()
+
+    if device == "cuda":
+        model = torch.nn.DataParallel(model, device_ids=[0,1,2,3])
+        cudnn.benchmark = True
 
     print("Eval Start")
     model.eval()
@@ -162,9 +167,9 @@ def val():
                 phases = np.concatenate((phases, phase), axis=0)
                 preds = np.concatenate((preds, pred), axis=0)
                 gts = np.concatenate((gts, gt), axis=0)
-            break
+            #break
 
-            break
+            #break
 
     #print(gts[3][18:24])
     #print(preds[3][18:24])
@@ -174,9 +179,9 @@ def val():
 
     #print(gts.shape)
 
-    #if task == "ssls":
-    #    scores_array = rmse(gts, preds, classes=n_classes)
-    #    save_score_array(scores_array, save_dir)
+    if task == "ssls":
+        scores_array = rmse(gts, preds, classes=n_classes)
+        save_score_array(scores_array, save_dir)
 
     for n in range(len(preds)):
         plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="prediction")
@@ -279,8 +284,9 @@ if __name__ == "__main__":
     #save_dir = osp.join("results", dataset_name, "2021_1202_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1203_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1205_supervised_ssls_UNet")
+    save_dir = osp.join("results", dataset_name, "2021_1210_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1212_supervised_ssls_UNet")
-    save_dir = osp.join("results", dataset_name, "2021_1218_supervised_ssls_UNet")
+    #save_dir = osp.join("results", dataset_name, "2021_1218_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 

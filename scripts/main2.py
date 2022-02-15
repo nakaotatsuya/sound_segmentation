@@ -136,16 +136,24 @@ def val():
     val_dataset = SoundSegmentationDataset2(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
 
+    device = "cuda" if torch.cuda.is_available() else "cpu"
     model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
     model.load(osp.join(save_dir, model_name + ".pth"))
-    model.cuda()
+    #model.cuda()
+    model.to(device)
+
+    if device == "cuda":
+        model = torch.nn.DataParallel(model, device_ids=[0,1,2,3])
+        cudnn.benchmark = True
 
     print("Eval Start")
     model.eval()
     with torch.no_grad():
         for i, (images, labels, phase) in tqdm(enumerate(val_loader)):
-            images = images.cuda()
-            labels = labels.cuda()
+            images = images.to(device)
+            #images = images.cuda()
+            labels = labels.to(device)
+            #labels = labels.cuda()
             outputs = model(images)
 
             X_in = images.data.cpu().numpy()
@@ -162,7 +170,7 @@ def val():
                 phases = np.concatenate((phases, phase), axis=0)
                 preds = np.concatenate((preds, pred), axis=0)
                 gts = np.concatenate((gts, gt), axis=0)
-            break
+            #break
 
     #print(gts[3][18:24])
     #print(preds[3][18:24])
@@ -172,9 +180,11 @@ def val():
 
     #print(gts.shape)
 
-    #if task == "ssls":
-    #    scores_array = rmse(gts, preds, classes=n_classes)
-    #    save_score_array(scores_array, save_dir)
+    if task == "ssls":
+        print("aaaaa")
+        scores_array = rmse(gts, preds, classes=n_classes)
+        print("aaaa")
+        save_score_array(scores_array, save_dir)
 
     for n in range(len(preds)):
         plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="prediction")
@@ -279,6 +289,7 @@ if __name__ == "__main__":
     #save_dir = osp.join("results", dataset_name, "2021_1205_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1212_supervised_ssls_UNet")
     #save_dir = osp.join("results", dataset_name, "2021_1218_supervised_ssls_UNet")
+    save_dir = osp.join("results", dataset_name, "2021_1219_supervised_ssls_UNet")
     if not osp.exists(save_dir):
         os.makedirs(save_dir)
 
@@ -290,6 +301,6 @@ if __name__ == "__main__":
     else:
         raise ValueError("mic num should be 8")
 
-    train()
+    #train()
     #val()
-    #real_val()
+    real_val()

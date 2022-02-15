@@ -14,7 +14,7 @@ from torch.utils import data
 import  os.path as osp
 from torch.utils.data import DataLoader
 
-class SoundSegmentationDataset_2D(data.Dataset):
+class SoundSegmentationDataset_2D2(data.Dataset):
     def __init__(self, root, split="train", task="ssls", n_classes=1, spatial_type=None, mic_num=8, angular_resolution=8, input_dim=15):
         self.split = split
         self.task = task
@@ -44,8 +44,6 @@ class SoundSegmentationDataset_2D(data.Dataset):
             mode_dir = osp.join(root, "noise_train2")
         elif split == "noise_val2":
             mode_dir = osp.join(root, "noise_val2")
-        elif split == "without_noise_train2":
-            mode_dir = osp.join(root, "without_noise_train2")
         else:
             raise ValueError("undefined")
 
@@ -79,12 +77,12 @@ class SoundSegmentationDataset_2D(data.Dataset):
         direction_index = 0
         filelist = os.listdir(self.data_pair_folders[index])
         for filename in filelist:
-            if filename[-4:] == ".wav" and (filename != "ss.wav") and (filename != "noisereduce.wav"):
+            if filename[-4:] == ".wav" and (not "_" in filename) and (filename != "ss.wav"):
                 waveform, fs = sf.read(osp.join(self.data_pair_folders[index], filename))
                 #print(waveform.shape) #24000
                 #print(fs) #16000
                 _, _, stft = signal.stft(x=waveform.T, fs=fs, nperseg=512, return_onesided=False)
-                if "_" in filename:
+                if filename == "noisereduce.wav":
                     if self.mic_num == 8:
                         #stft = stft[:, :, 1:len(stft.T) - 1]
                         #prepare 96

@@ -27,7 +27,7 @@ for num in nums:
     save_path = osp.join(root_path, "real_val", num)
 
     for filename in filelist:
-        if filename == "ss.wav":
+        if filename == "ss.wav" or filename == "noisereduce.wav":
             print(filename)
             shutil.copy(osp.join(wav_file_num_path, filename), save_path)
     

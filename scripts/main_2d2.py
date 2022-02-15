@@ -16,7 +16,7 @@ from torch.backends import cudnn
 
 #from model import read_model, FCN8s, UNet, CRNN, Deeplabv3plus
 from models import read_model, UNet, Deeplabv3plus
-from data import SoundSegmentationDataset_2D
+from data import SoundSegmentationDataset_2D2
 from utils import scores, rmse, save_score_array
 from utils import plot_loss, plot_mixture_stft, plot_event, plot_class_stft, plot_save
 from utils import restore
@@ -34,11 +34,11 @@ import soundfile as sf
 import wavio
 
 def train():
-    train_dataset = SoundSegmentationDataset_2D(dataset_dir, split="without_noise_train2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    train_dataset = SoundSegmentationDataset_2D2(dataset_dir, split="noise_train2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size, num_workers=16, shuffle=True, pin_memory=True)
 
-    val_dataset = SoundSegmentationDataset_2D(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_dataset = SoundSegmentationDataset_2D2(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=16, shuffle=False, pin_memory=True)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -133,7 +133,7 @@ def train():
         #    shutil.copy("nohup.out", save_dir)
 
 def val():
-    val_dataset = SoundSegmentationDataset_2D(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_dataset = SoundSegmentationDataset_2D2(dataset_dir, split="noise_val2", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
 
     model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
@@ -162,9 +162,7 @@ def val():
                 phases = np.concatenate((phases, phase), axis=0)
                 preds = np.concatenate((preds, pred), axis=0)
                 gts = np.concatenate((gts, gt), axis=0)
-            break
-
-            break
+            #break
 
     #print(gts[3][18:24])
     #print(preds[3][18:24])
@@ -179,9 +177,10 @@ def val():
     #    save_score_array(scores_array, save_dir)
 
     for n in range(len(preds)):
-        plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="prediction")
-        plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="prediction")
-        restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="prediction")
+        #plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="prediction")
+        #plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="prediction")
+        plot_save(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="prediction")
+        #restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="prediction")
         #sys.exit()
 
     # for i in range(angular_resolution):
@@ -205,7 +204,7 @@ def val():
     #         sys.exit()
 
 def real_val():
-    val_dataset = SoundSegmentationDataset_2D(dataset_dir, split="real_val", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
+    val_dataset = SoundSegmentationDataset_2D2(dataset_dir, split="real_val", task=task, n_classes=n_classes, spatial_type=spatial_type, mic_num=mic_num, angular_resolution=angular_resolution, input_dim=input_dim)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=4, shuffle=False)
 
     model = read_model(model_name, n_classes=n_classes, angular_resolution=angular_resolution, input_dim=input_dim)
@@ -236,10 +235,10 @@ def real_val():
                 gts = np.concatenate((gts, gt), axis=0)
 
     for n in range(len(preds)):
-        #plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="real_prediction")
-        #plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="real_prediction")
-        plot_save(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="real_prediction")
-        restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="real_prediction")
+        #plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="real_prediction_noisereduce")
+        #plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="real_prediction_noisereduce")
+        plot_save(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="real_prediction_noisereduce")
+        #restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="real_prediction_noisereduce")
         
 if __name__ == "__main__":
     #rospack = rospkg.RosPack()
@@ -297,5 +296,5 @@ if __name__ == "__main__":
         raise ValueError("mic num should be 8")
 
     #train()
-    #val()
-    real_val()
+    val()
+    #real_val()
