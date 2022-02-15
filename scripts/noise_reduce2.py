@@ -35,7 +35,7 @@ if __name__ == "__main__":
         "sound_segmentation"), "house_audios")
     #num = "00004"
 
-    wav_file_path = osp.join(root_path, "noise_val2")
+    wav_file_path = osp.join(root_path, "real_val")
     nums = os.listdir(wav_file_path)
     nums.sort(key=int)
 
@@ -45,7 +45,7 @@ if __name__ == "__main__":
         wav_file_num_path = osp.join(wav_file_path, num)
         filelist = os.listdir(wav_file_num_path)
         print(filelist)
-        save_path = osp.join(root_path, "noise_processed_val", num)
+        save_path = osp.join(root_path, "noise_processed_real_val", num)
         if not osp.exists(save_path):
             os.makedirs(save_path)
             

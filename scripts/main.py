@@ -164,20 +164,6 @@ def val():
                 gts = np.concatenate((gts, gt), axis=0)
             break
 
-            break
-
-    #print(gts[3][18:24])
-    #print(preds[3][18:24])
-
-    #print(phases.shape)
-    #print(X_ins.shape)
-
-    #print(gts.shape)
-
-    #if task == "ssls":
-    #    scores_array = rmse(gts, preds, classes=n_classes)
-    #    save_score_array(scores_array, save_dir)
-
     for n in range(len(preds)):
         plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="prediction")
         plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="prediction")
@@ -236,14 +222,27 @@ def real_val():
                 gts = np.concatenate((gts, gt), axis=0)
 
     for n in range(len(preds)):
+        max_power_per_pixel = 0
+        max_idx = 0
+        for an in range(angular_resolution):
+            cv_pred = preds[n][an][::-1,:]
+            power_per_pixel = cv_pred.sum() / cv_pred.size
+            #print(power_per_pixel)
+            #print(max_power_per_pixel)
+            if power_per_pixel > max_power_per_pixel:
+                max_power_per_pixel = power_per_pixel
+                max_idx = an
+        print("max_idx:", max_idx)
+
+    for n in range(len(preds)):
         plot_mixture_stft(X_ins, no=n, save_dir=save_dir, pred="real_prediction")
         plot_class_stft(gts, preds, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, pred="real_prediction")
-        restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="real_prediction")
+        #restore(gts, preds, phases, no=n, save_dir=save_dir, classes=n_classes, ang_reso=angular_resolution, dataset_dir=dataset_dir, pred="real_prediction")
         
 if __name__ == "__main__":
-    #rospack = rospkg.RosPack()
-    #root = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
-    root = "/home/jsk/nakao/sound_segmentation/house_audios"
+    rospack = rospkg.RosPack()
+    root = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
+    #root = "/home/jsk/nakao/sound_segmentation/house_audios"
     #root = osp.join(rospack.get_path("sound_segmentation"), "esc50")
     #root = osp.join(rospack.get_path("sound_segmentation"), "sep_esc50")
 
@@ -293,5 +292,5 @@ if __name__ == "__main__":
         raise ValueError("mic num should be 8")
 
     #train()
-    val()
-    #real_val()
+    #val()
+    real_val()

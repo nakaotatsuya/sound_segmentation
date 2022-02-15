@@ -20,7 +20,7 @@ file_path = osp.join(rospack.get_path("sound_segmentation"), "house_audios")
 #wav_file_path = osp.join(file_path, "val", "00009")
 #wav_file_path = osp.join(file_path, "noise_train2", "00003")
 
-wav_file_path = osp.join(file_path, "noise_processed_train")
+wav_file_path = osp.join(file_path, "noise_processed_real_val")
 nums = os.listdir(wav_file_path)
 nums.sort(key=int)
 
